@@ -1,0 +1,255 @@
+package lyc.compiler;
+
+%{
+import java_cup.runtime.*;
+import lyc.compiler.files.TypeHelper;
+import lyc.compiler.files.SymbolTable;
+import lyc.compiler.files.SymbolTableGenerator;
+import java.io.FileWriter;
+import java.io.IOException;
+%}
+
+class Parser;
+
+// Terminals
+terminal AND;
+terminal ASSIG;
+terminal COMA;
+terminal CONV_DATE;
+terminal CORCHETE_ABRE;
+terminal CORCHETE_CIERRA;
+terminal DISTINTO;
+terminal DIV;
+terminal DOSPUNTOS;
+terminal ELSE;
+terminal FLOAT_CONSTANT;
+terminal FLOAT_TYPE;
+terminal IDENTIFIER;
+terminal IF;
+terminal IGUAL;
+terminal INIT;
+terminal INTEGER_CONSTANT;
+terminal NEGATIVE_INTEGER_CONSTANT;
+terminal NEGATIVE_FLOAT_CONSTANT;
+terminal INT_TYPE;
+terminal LLAVE_ABRE;
+terminal LLAVE_CIERRA;
+terminal MAYOR;
+terminal MAYOR_IGUAL;
+terminal MENOR;
+terminal MENOR_IGUAL;
+terminal MULT;
+terminal NOT;
+terminal OR;
+terminal PARENTESIS_ABRE;
+terminal PARENTESIS_CIERRA;
+terminal PLUS;
+terminal PUNTO_Y_COMA;
+terminal READ; 
+terminal STRING_CONSTANT;
+terminal STRING_TYPE;
+terminal SUB;
+terminal TRIANGLE_AREA_MAXIMUM;
+terminal WHILE;
+terminal WRITE;
+terminal COMILLA_ABRE;
+terminal COMILLA_CIERRA;
+
+// Non Terminals
+non terminal assignment;
+non terminal block;
+non terminal comparison;
+non terminal condition;
+non terminal coordinate;
+non terminal coordinate_list;
+non terminal coordinate_value;
+non terminal declaration;
+non terminal declaration_list;
+non terminal expression;
+non terminal factor;
+non terminal function;
+non terminal init_block;
+non terminal logical_and;
+non terminal logical_expression;
+non terminal logical_term;
+non terminal parameter;
+non terminal parameter_date;
+non terminal program;
+non terminal sentence;
+non terminal sentence_conv_date;
+non terminal sentence_if;
+non terminal sentence_list;
+non terminal sentence_read; 
+non terminal sentence_triangle_area;
+non terminal sentence_while;
+non terminal sentence_write;
+non terminal term;
+non terminal triangle;
+non terminal type;
+non terminal variable_list;
+
+// Start Symbol Definition
+start with program;
+
+program ::= init_block sentence_list {: 
+                System.out.println("Program with init completed"); 
+                SymbolTable.getInstance().generateSymbolTableFile();
+            :}
+          | sentence_list {: 
+                System.out.println("Program completed"); 
+                SymbolTable.getInstance().generateSymbolTableFile();
+            :}
+          | init_block {: 
+                System.out.println("Program with init only"); 
+                SymbolTable.getInstance().generateSymbolTableFile();
+            :}
+          | {: 
+                System.out.println("Empty program"); 
+                SymbolTable.getInstance().generateSymbolTableFile();
+            :};
+
+init_block ::= INIT LLAVE_ABRE declaration_list LLAVE_CIERRA {: System.out.println("Init block completed"); :};
+
+declaration_list ::= declaration_list declaration {: System.out.println("Multiple declarations"); :}
+                   | declaration {: System.out.println("First declaration"); :};
+
+declaration ::= variable_list DOSPUNTOS type {: System.out.println("Variable declaration with type: " + TypeHelper.getCurrentType()); :};
+
+variable_list ::= variable_list COMA IDENTIFIER:id {: 
+                    System.out.println("," + id); 
+                    SymbolTable.getInstance().addVariable(id.toString(), "-");
+                :}
+                | IDENTIFIER:id {: 
+                    System.out.println("Variable: " + id); 
+                    SymbolTable.getInstance().addVariable(id.toString(), "-");
+                :};
+
+type ::= FLOAT_TYPE {: 
+            System.out.println("Type: Float"); 
+            TypeHelper.setCurrentType("Float");
+        :}
+       | INT_TYPE {: 
+            System.out.println("Type: Int"); 
+            TypeHelper.setCurrentType("Int");
+        :}
+       | STRING_TYPE {: 
+            System.out.println("Type: String"); 
+            TypeHelper.setCurrentType("String");
+        :};
+
+sentence_list ::= sentence_list sentence {: System.out.println("Multiple sentences"); :}
+                | sentence {: System.out.println("First sentence"); :};
+
+sentence ::= assignment {: System.out.println("Assignment sentence"); :} 
+           | sentence_read {: System.out.println("Function call sentence read"); :}
+           | sentence_write {: System.out.println("Function call sentence write"); :}
+           | sentence_if {: System.out.println("Sentence If"); :}
+           | sentence_while {: System.out.println("Sentence While"); :}
+           | sentence_conv_date {: System.out.println("Function convDate"); :};
+
+sentence_if ::= IF PARENTESIS_ABRE condition PARENTESIS_CIERRA block ELSE block {: System.out.println("If-else completed"); :}
+             | IF PARENTESIS_ABRE condition PARENTESIS_CIERRA block {: System.out.println("If completed"); :};
+
+sentence_while ::= WHILE PARENTESIS_ABRE condition PARENTESIS_CIERRA block {: System.out.println("While completed"); :};
+
+sentence_conv_date ::= CONV_DATE PARENTESIS_ABRE parameter_date PARENTESIS_CIERRA  {: System.out.println("Function call convDate"); :};
+
+condition ::= logical_expression {: System.out.println("Condition evaluated"); :};
+
+logical_expression ::= logical_expression OR logical_and {: System.out.println("Logical OR"); :}
+                     | logical_and {: :};
+
+logical_and ::= logical_and AND logical_term {: System.out.println("Logical AND"); :}
+             | logical_term {: :};
+
+logical_term ::= expression comparison expression {: System.out.println("comparison"); :}
+              | NOT logical_term {: System.out.println("NOT operation"); :};
+
+comparison ::= MAYOR {: System.out.println("Operator: >"); :}
+             | MENOR {: System.out.println("Operator: <"); :}
+             | IGUAL {: System.out.println("Operator: =="); :}
+             | DISTINTO {: System.out.println("Operator: !="); :}
+             | MAYOR_IGUAL {: System.out.println("Operator: >="); :}
+             | MENOR_IGUAL {: System.out.println("Operator: <="); :};
+
+block ::= LLAVE_ABRE sentence_list LLAVE_CIERRA {: System.out.println("Block completed"); :};
+
+assignment ::= IDENTIFIER ASSIG expression {: System.out.println("Assignment"); :}
+             | IDENTIFIER ASSIG function {: System.out.println("Assignment"); :};
+
+expression ::= expression PLUS term {: System.out.println("+"); :}
+             | expression SUB term {: System.out.println("-"); :}
+             | term {: System.out.println("Expression = Term"); :};
+
+term ::= term MULT factor {: System.out.println("*"); :}
+       | term DIV factor {: System.out.println("/"); :}
+       | factor {: System.out.println("Term = factor"); :};
+
+factor ::= IDENTIFIER:id  {: 
+                         System.out.println("Id: " + id);
+                         SymbolTable.getInstance().addVariable(id.toString(), "-");
+                    :}
+         | INTEGER_CONSTANT:constant {: 
+                        System.out.println("Integer: " + constant ); 
+                        SymbolTable.getInstance().addConstant(constant.toString(), "Int");
+                    :}
+         | FLOAT_CONSTANT:constant {: 
+                        System.out.println("Float: " + constant ); 
+                        SymbolTable.getInstance().addConstant(constant.toString(), "Float");
+                    :}
+         | STRING_CONSTANT:constant {: 
+                        System.out.println("String: " + constant ); 
+                        SymbolTable.getInstance().addConstant(constant.toString(), "String");
+                    :}
+         | PARENTESIS_ABRE expression PARENTESIS_CIERRA {: System.out.println("Factor = (Expression)"); :}
+         | NEGATIVE_INTEGER_CONSTANT:constant {: 
+                        System.out.println("Negative integer: " + constant); 
+                        SymbolTable.getInstance().addConstant(constant.toString(), "Int");
+                    :}
+         | NEGATIVE_FLOAT_CONSTANT:constant {: 
+                        System.out.println("Negative float: " + constant); 
+                        SymbolTable.getInstance().addConstant(constant.toString(), "Float");
+                    :}
+         | SUB PARENTESIS_ABRE expression PARENTESIS_CIERRA {: System.out.println("Negative expression: -(Expression)"); :};
+
+parameter ::= IDENTIFIER:id {: System.out.println("Parameter ID: " + id); :}
+            | STRING_CONSTANT:str {: 
+                    System.out.println("Parameter String: " + str);
+                    SymbolTable.getInstance().addConstant(str.toString(), "String");
+                :}
+            | COMILLA_ABRE IDENTIFIER:id COMILLA_CIERRA {: 
+                    System.out.println("Parameter String comillas: " + id);
+                    SymbolTable.getInstance().addVariable(id.toString(), "String");
+                :};
+
+sentence_read ::= READ PARENTESIS_ABRE parameter:param PARENTESIS_CIERRA {: System.out.println("Function read"); :};
+
+sentence_write ::= WRITE PARENTESIS_ABRE parameter:param PARENTESIS_CIERRA {: System.out.println("Function write"); :};
+
+parameter_date ::= INTEGER_CONSTANT:day SUB INTEGER_CONSTANT:month SUB INTEGER_CONSTANT:year 
+                 {: System.out.println("Date parameter: " + day + "-" + month + "-" + year); :}; 
+
+function ::= sentence_conv_date {: System.out.println("Function convDate assignment: "); :}
+          | sentence_triangle_area {: System.out.println("Function triangleAreaMaximum assignment: "); :};
+
+sentence_triangle_area ::= TRIANGLE_AREA_MAXIMUM PARENTESIS_ABRE triangle PUNTO_Y_COMA triangle PARENTESIS_CIERRA 
+                          {: System.out.println("Function call triangleAreaMaximum"); :};
+
+triangle ::= CORCHETE_ABRE coordinate_list CORCHETE_CIERRA {: System.out.println("Triangle defined"); :};
+
+coordinate_list ::= coordinate PUNTO_Y_COMA coordinate PUNTO_Y_COMA coordinate  {: System.out.println("Multiple coordinates"); :};
+
+coordinate ::= coordinate_value COMA coordinate_value {: System.out.println("Coordinate pair"); :};
+
+coordinate_value ::= INTEGER_CONSTANT:val {: 
+                        System.out.println("Integer coordinate: " + val); 
+                        SymbolTable.getInstance().addConstant(val.toString(), "Int");
+                    :}
+                   | FLOAT_CONSTANT:val {: 
+                        System.out.println("Float coordinate: " + val); 
+                        SymbolTable.getInstance().addConstant(val.toString(), "Float");
+                    :}
+                   | IDENTIFIER:id {: 
+                        System.out.println("Variable coordinate: " + id); 
+                        SymbolTable.getInstance().addVariable(id.toString(), "-");
+                    :};
