@@ -13,7 +13,6 @@ public class SymbolTableGenerator implements FileGenerator {
     @Override
     public void generate(FileWriter fileWriter) throws IOException {
         SymbolTable symbolTable = SymbolTable.getInstance();
-
         // Header
         fileWriter.write("\n" + "=".repeat(110) + "\n");
         fileWriter.write(centerText("SYMBOLS TABLE", 110) + "\n");
@@ -30,8 +29,8 @@ public class SymbolTableGenerator implements FileGenerator {
             String name = s.getName();
             String type = s.getType() != null ? s.getType() : "-";
             String value = s.getValue() != null ? s.getValue() : "-";
-            String length = s.getValue() != null ? 
-                           String.valueOf(s.getValue().length()) : "0";
+            String length = s.getLength() != null ? 
+                           String.valueOf(s.getLength()) : "-";
             
             fileWriter.write(String.format(format, name, type, value, length));
         }
@@ -40,7 +39,7 @@ public class SymbolTableGenerator implements FileGenerator {
         fileWriter.write("=".repeat(110) + "\n");
         fileWriter.write("Total symbols: " + symbolTable.getSymbolCount() + "\n");
         fileWriter.write("=".repeat(110) + "\n\n");
-        
+
         fileWriter.flush();
     }
 }
