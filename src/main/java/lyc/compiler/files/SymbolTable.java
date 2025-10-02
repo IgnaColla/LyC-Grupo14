@@ -40,25 +40,41 @@ public class SymbolTable {
         return symbols.containsKey(name);
     }
     
+    private String centerText(String text, int width) {
+        int padding = (width - text.length()) / 2;
+        return " ".repeat(Math.max(0, padding)) + text;
+    }
+    
     public void generateSymbolTableFile() {
         System.out.println("Generating symbols table... Total symbols: " + symbols.size());
         
         try (FileWriter writer = new FileWriter("./symbols-table.txt")) {
-            writer.write("SYMBOLS TABLE\n");
-            writer.write("=================\n\n");
-            writer.write(String.format("%-20s %-15s %-20s %-15s \n", 
-                "NAME", "TYPE", "VALUE", "LENGTH"  ));
-            writer.write("----------------------------------------------------------------\n");
+            // Header
+            writer.write("\n" + "=".repeat(110) + "\n");
+            writer.write(centerText("SYMBOLS TABLE", 110) + "\n");
+            writer.write("=".repeat(110) + "\n");
             
+            // Column headers
+            String format = "| %-35s | %-13s | %-35s | %-8s |\n";
+            writer.write(String.format(format, "NAME", "TYPE", "VALUE", "LENGTH"));
+            writer.write("-".repeat(110) + "\n");
+            
+            // Symbol entries
             for (Symbol symbol : symbols.values()) {
-                writer.write(String.format("%-20s %-15s %-20s %-15s\n",
-                    symbol.getName(),
-                    symbol.getType(),
-                    symbol.getValue() != null ? symbol.getValue() : "-",
-                    symbol.getValue() != null ? symbol.getValue().length() : "0"));
+                String name = symbol.getName();
+                String type = symbol.getType() != null ? symbol.getType() : "-";
+                String value = symbol.getValue() != null ? symbol.getValue() : "-";
+                String length = symbol.getValue() != null ? 
+                               String.valueOf(symbol.getValue().length()) : "0";
+                
+                writer.write(String.format(format, name, type, value, length));
             }
             
-            writer.write("\nTotal symbols: " + symbols.size() + "\n");
+            // Footer
+            writer.write("=".repeat(110) + "\n");
+            writer.write("Total symbols: " + symbols.size() + "\n");
+            writer.write("=".repeat(110) + "\n\n");
+            
             System.out.println("Symbols table generated successfully.");
             
         } catch (IOException e) {
