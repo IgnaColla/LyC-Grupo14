@@ -114,6 +114,14 @@ public class SymbolTable {
         return symbols.size();
     }
  
+    public void updateVariablesWithType(String type) {
+        for (Symbol symbol : symbols.values()) {
+            if (symbol.getType().equals("-") && !symbol.isConstant()) {
+                symbol.setType(type);
+            }
+        }
+    }
+
     public static class Symbol {
         private String name;
         private String category; // VARIABLE or CONSTANT
@@ -131,6 +139,14 @@ public class SymbolTable {
             this.type = type;
             this.value = value;
             this.length = length;
+        }
+
+        public void setType(String type) { 
+            this.type = type; 
+        }
+
+        public boolean isConstant() { 
+            return "CONSTANT".equals(this.category); 
         }
 
         public String getName() { return name; }

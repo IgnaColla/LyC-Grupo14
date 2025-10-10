@@ -72,12 +72,12 @@ non terminal init_block;
 non terminal logical_and;
 non terminal logical_expression;
 non terminal logical_term;
+non terminal matched_sentence;
 non terminal parameter;
 non terminal parameter_date;
 non terminal program;
 non terminal sentence;
 non terminal sentence_conv_date;
-non terminal sentence_if;
 non terminal sentence_list;
 non terminal sentence_read; 
 non terminal sentence_triangle_area;
@@ -86,6 +86,7 @@ non terminal sentence_write;
 non terminal term;
 non terminal triangle;
 non terminal type;
+non terminal unmatched_sentence;
 non terminal variable_list;
 
 // Start Symbol Definition
@@ -113,7 +114,10 @@ init_block ::= INIT LLAVE_ABRE declaration_list LLAVE_CIERRA {: System.out.print
 declaration_list ::= declaration_list declaration {: System.out.println("Multiple declarations"); :}
                    | declaration {: System.out.println("First declaration"); :};
 
-declaration ::= variable_list DOSPUNTOS type {: System.out.println("Variable declaration with type: " + TypeHelper.getCurrentType()); :};
+declaration ::= variable_list DOSPUNTOS type {: 
+                    System.out.println("Variable declaration with type: " + TypeHelper.getCurrentType()); 
+                    SymbolTable.getInstance().updateVariablesWithType(TypeHelper.getCurrentType());
+                :};
 
 variable_list ::= variable_list COMA IDENTIFIER:id {: 
                     System.out.println("," + id); 
@@ -140,15 +144,19 @@ type ::= FLOAT_TYPE {:
 sentence_list ::= sentence_list sentence {: System.out.println("Multiple sentences"); :}
                 | sentence {: System.out.println("First sentence"); :};
 
-sentence ::= assignment {: System.out.println("Assignment sentence"); :} 
-           | sentence_read {: System.out.println("Function call sentence read"); :}
-           | sentence_write {: System.out.println("Function call sentence write"); :}
-           | sentence_if {: System.out.println("Sentence If"); :}
-           | sentence_while {: System.out.println("Sentence While"); :}
-           | sentence_conv_date {: System.out.println("Function convDate"); :};
+sentence ::= matched_sentence {: :}
+           | unmatched_sentence {: :};
 
-sentence_if ::= IF PARENTESIS_ABRE condition PARENTESIS_CIERRA block ELSE block {: System.out.println("If-else completed"); :}
-             | IF PARENTESIS_ABRE condition PARENTESIS_CIERRA block {: System.out.println("If completed"); :};
+matched_sentence ::= assignment {: System.out.println("Assignment sentence"); :} 
+                   | sentence_read {: System.out.println("Function call sentence read"); :}
+                   | sentence_write {: System.out.println("Function call sentence write"); :}
+                   | IF PARENTESIS_ABRE condition PARENTESIS_CIERRA matched_sentence ELSE matched_sentence {: System.out.println("Matched If-else completed"); :}
+                   | sentence_while {: System.out.println("Sentence While"); :}
+                   | sentence_conv_date {: System.out.println("Function convDate"); :}
+                   | block {: System.out.println("Block as sentence"); :};
+
+unmatched_sentence ::= IF PARENTESIS_ABRE condition PARENTESIS_CIERRA sentence {: System.out.println("Unmatched If completed"); :}
+                     | IF PARENTESIS_ABRE condition PARENTESIS_CIERRA matched_sentence ELSE unmatched_sentence {: System.out.println("If with unmatched else"); :};
 
 sentence_while ::= WHILE PARENTESIS_ABRE condition PARENTESIS_CIERRA block {: System.out.println("While completed"); :};
 
