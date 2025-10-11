@@ -1,0 +1,44 @@
+SYMBOLS TABLE
+=================
+
+NAME                 TYPE            VALUE                LENGTH          
+----------------------------------------------------------------
+p1                   String          -                    0              
+p2                   String          -                    0              
+4.0                  Float           4.0                  3              
+p3                   String          -                    0              
+27                   CTE_INTEGER     27                   2              
+99.                  CTE_FLOAT       99.                  3              
+.9999                CTE_FLOAT       .9999                5              
+"asldk  fh sjf"      CTE_STRING      "asldk  fh sjf"      15             
+b1                   Float           -                    0              
+0                    Int             0                    1              
+2.5                  Float           2.5                  3              
+areaMax              Float           -                    0              
+"a > b y c > b"      CTE_STRING      "a > b y c > b"      15             
+"@sdADaSjfla%dfg"    CTE_STRING      "@sdADaSjfla%dfg"    17             
+99999.99             CTE_FLOAT       99999.99             8              
+34                   CTE_INTEGER     34                   2              
+var1                 Float           -                    0              
+variable1            Int             -                    0              
+a                    Float           -                    0              
+b                    Float           -                    0              
+c                    Float           -                    0              
+6                    Int             6                    1              
+f                    Float           -                    0              
+3.8                  CTE_FLOAT       3.8                  3              
+2                    Int             2                    1              
+a1                   Float           -                    0              
+r                    Float           -                    0              
+1                    CTE_INTEGER     1                    1              
+x                    Float           -                    0              
+3                    Int             3                    1              
+z                    Float           -                    0              
+dateC                String          -                    0              
+3                    CTE_INTEGER     3                    1              
+12                   Int             12                   2              
+2                    CTE_INTEGER     2                    1              
+base                 Float           -                    0              
+500                  CTE_INTEGER     500                  3              
+
+Total symbols: 37

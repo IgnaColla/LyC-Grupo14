@@ -4,9 +4,10 @@ package lyc.compiler;
 import java_cup.runtime.*;
 import lyc.compiler.files.TypeHelper;
 import lyc.compiler.files.SymbolTable;
-import lyc.compiler.files.SymbolTableGenerator;
-import java.io.FileWriter;
-import java.io.IOException;
+import lyc.compiler.codegen.CodeGenerator;
+import lyc.compiler.semantic.SemanticChecker;
+import java.util.ArrayList;
+import java.util.List;
 %}
 
 class Parser;
@@ -58,21 +59,22 @@ terminal COMILLA_CIERRA;
 // Non Terminals
 non terminal assignment;
 non terminal block;
-non terminal comparison;
-non terminal condition;
+non terminal String comparison;
+non terminal String condition;
 non terminal coordinate;
 non terminal coordinate_list;
 non terminal coordinate_value;
 non terminal declaration;
 non terminal declaration_list;
-non terminal expression;
-non terminal factor;
+non terminal String expression;
+non terminal String factor;
 non terminal function;
 non terminal init_block;
-non terminal logical_and;
-non terminal logical_expression;
-non terminal logical_term;
-non terminal parameter;
+non terminal String logical_and;
+non terminal String logical_expression;
+non terminal String logical_term;
+non terminal matched_sentence;
+non terminal String parameter;
 non terminal parameter_date;
 non terminal program;
 non terminal sentence;
@@ -83,10 +85,11 @@ non terminal sentence_read;
 non terminal sentence_triangle_area;
 non terminal sentence_while;
 non terminal sentence_write;
-non terminal term;
+non terminal String term;
 non terminal triangle;
-non terminal type;
-non terminal variable_list;
+non terminal String type;
+non terminal unmatched_sentence;
+non terminal List variable_list;
 
 // Start Symbol Definition
 start with program;
@@ -108,33 +111,53 @@ program ::= init_block sentence_list {:
                 SymbolTable.getInstance().generateSymbolTableFile();
             :};
 
-init_block ::= INIT LLAVE_ABRE declaration_list LLAVE_CIERRA {: System.out.println("Init block completed"); :};
+init_block ::= INIT LLAVE_ABRE declaration_list LLAVE_CIERRA {: 
+                System.out.println("Init block completed");
+                CodeGenerator.add("");
+            :};
 
 declaration_list ::= declaration_list declaration {: System.out.println("Multiple declarations"); :}
                    | declaration {: System.out.println("First declaration"); :};
 
-declaration ::= variable_list DOSPUNTOS type {: System.out.println("Variable declaration with type: " + TypeHelper.getCurrentType()); :};
+declaration ::= variable_list:vars DOSPUNTOS type:t {: 
+                    System.out.println("Variable declaration with type: " + t);
+                    List<String> varList = (List<String>)vars;
+                    for (String var : varList) {
+                        SemanticChecker.declare(var, t);
+                        CodeGenerator.add("// DECLARE " + var + " : " + t);
+                    }
+                    SymbolTable.getInstance().updateVariablesWithType(t);
+                :};
 
-variable_list ::= variable_list COMA IDENTIFIER:id {: 
-                    System.out.println("," + id); 
+variable_list ::= variable_list:list COMA IDENTIFIER:id {: 
+                    System.out.println("," + id);
+                    List<String> vars = (List<String>)list;
+                    vars.add(id.toString());
                     SymbolTable.getInstance().addVariable(id.toString(), "-");
+                    RESULT = vars;
                 :}
                 | IDENTIFIER:id {: 
-                    System.out.println("Variable: " + id); 
+                    System.out.println("Variable: " + id);
+                    List<String> vars = new ArrayList<>();
+                    vars.add(id.toString());
                     SymbolTable.getInstance().addVariable(id.toString(), "-");
+                    RESULT = vars;
                 :};
 
 type ::= FLOAT_TYPE {: 
-            System.out.println("Type: Float"); 
+            System.out.println("Type: Float");
             TypeHelper.setCurrentType("Float");
+            RESULT = "Float";
         :}
        | INT_TYPE {: 
-            System.out.println("Type: Int"); 
+            System.out.println("Type: Int");
             TypeHelper.setCurrentType("Int");
+            RESULT = "Int";
         :}
        | STRING_TYPE {: 
-            System.out.println("Type: String"); 
+            System.out.println("Type: String");
             TypeHelper.setCurrentType("String");
+            RESULT = "String";
         :};
 
 sentence_list ::= sentence_list sentence {: System.out.println("Multiple sentences"); :}
@@ -174,48 +197,105 @@ comparison ::= MAYOR {: System.out.println("Operator: >"); :}
 
 block ::= LLAVE_ABRE sentence_list LLAVE_CIERRA {: System.out.println("Block completed"); :};
 
-assignment ::= IDENTIFIER ASSIG expression {: System.out.println("Assignment"); :}
-             | IDENTIFIER ASSIG function {: System.out.println("Assignment"); :};
+assignment ::= IDENTIFIER:id ASSIG expression:expr {: 
+                        System.out.println("Assignment: " + id + " = " + expr);
+                        String temp = CodeGenerator.newTemp();
+                        CodeGenerator.add(temp + " = " + expr);
+                        CodeGenerator.add(id + " = " + temp);
+                        // Validar que la variable existe
+                        SemanticChecker.checkExists(id.toString());
+                        RESULT = id.toString();
+                    :}
+             | IDENTIFIER:id ASSIG function:func {: 
+                        System.out.println("Assignment function: " + id + " = " + func);
+                        String temp = CodeGenerator.newTemp();
+                        CodeGenerator.add(temp + " = " + func);
+                        CodeGenerator.add(id + " = " + temp);
+                        // Validar que la variable existe
+                        SemanticChecker.checkExists(id.toString());
+                        RESULT = id.toString();
+                    :};
 
-expression ::= expression PLUS term {: System.out.println("+"); :}
-             | expression SUB term {: System.out.println("-"); :}
-             | term {: System.out.println("Expression = Term"); :};
+expression ::= expression:expr1 PLUS term:term1 {: 
+                        System.out.println("+");
+                        String temp = CodeGenerator.newTemp();
+                        CodeGenerator.add(temp + " = " + expr1 + " + " + term1);
+                        RESULT = temp;
+                    :}
+             | expression:expr1 SUB term:term1 {: 
+                        System.out.println("-");
+                        String temp = CodeGenerator.newTemp();
+                        CodeGenerator.add(temp + " = " + expr1 + " - " + term1);
+                        RESULT = temp;
+                    :}
+             | term:term1 {: 
+                        System.out.println("Expression = Term");
+                        RESULT = term1;
+                    :};
 
-term ::= term MULT factor {: System.out.println("*"); :}
-       | term DIV factor {: System.out.println("/"); :}
-       | factor {: System.out.println("Term = factor"); :};
+term ::= term:term1 MULT factor:fact1 {: 
+                    System.out.println("*");
+                    String temp = CodeGenerator.newTemp();
+                    CodeGenerator.add(temp + " = " + term1 + " * " + fact1);
+                    RESULT = temp;
+                :}
+       | term:term1 DIV factor:fact1 {: 
+                    System.out.println("/");
+                    String temp = CodeGenerator.newTemp();
+                    CodeGenerator.add(temp + " = " + term1 + " / " + fact1);
+                    RESULT = temp;
+                :}
+       | factor:fact1 {: 
+                    System.out.println("Term = factor");
+                    RESULT = fact1;
+                :};
 
 factor ::= IDENTIFIER:id  {: 
                          System.out.println("Id: " + id);
-                         SymbolTable.getInstance().addVariable(id.toString(), "-");
+                         // Verificar que la variable existe
+                         SemanticChecker.checkExists(id.toString());
+                         RESULT = id.toString();
                     :}
          | INTEGER_CONSTANT:constant {: 
                         System.out.println("Integer: " + constant ); 
-                        SymbolTable.getInstance().addConstant(constant.toString(), "Int");
+                        SymbolTable.getInstance().addConstant(constant.toString(), "CTE_INTEGER");
+                        RESULT = constant.toString();
                     :}
          | FLOAT_CONSTANT:constant {: 
                         System.out.println("Float: " + constant ); 
-                        SymbolTable.getInstance().addConstant(constant.toString(), "Float");
+                        SymbolTable.getInstance().addConstant(constant.toString(), "CTE_FLOAT");
+                        RESULT = constant.toString();
                     :}
          | STRING_CONSTANT:constant {: 
                         System.out.println("String: " + constant ); 
-                        SymbolTable.getInstance().addConstant(constant.toString(), "String");
+                        SymbolTable.getInstance().addConstant(constant.toString(), "CTE_STRING");
+                        RESULT = constant.toString();
                     :}
-         | PARENTESIS_ABRE expression PARENTESIS_CIERRA {: System.out.println("Factor = (Expression)"); :}
+         | PARENTESIS_ABRE expression:expr PARENTESIS_CIERRA {: 
+                        System.out.println("Factor = (Expression)");
+                        RESULT = expr;
+                    :}
          | NEGATIVE_INTEGER_CONSTANT:constant {: 
                         System.out.println("Negative integer: " + constant); 
-                        SymbolTable.getInstance().addConstant(constant.toString(), "Int");
+                        SymbolTable.getInstance().addConstant(constant.toString(), "CTE_INTEGER");
+                        RESULT = constant.toString();
                     :}
          | NEGATIVE_FLOAT_CONSTANT:constant {: 
                         System.out.println("Negative float: " + constant); 
-                        SymbolTable.getInstance().addConstant(constant.toString(), "Float");
+                        SymbolTable.getInstance().addConstant(constant.toString(), "CTE_FLOAT");
+                        RESULT = constant.toString();
                     :}
-         | SUB PARENTESIS_ABRE expression PARENTESIS_CIERRA {: System.out.println("Negative expression: -(Expression)"); :};
+         | SUB PARENTESIS_ABRE expression:expr PARENTESIS_CIERRA {: 
+                        System.out.println("Negative expression: -(Expression)");
+                        String temp = CodeGenerator.newTemp();
+                        CodeGenerator.add(temp + " = -" + expr);
+                        RESULT = temp;
+                    :};
 
 parameter ::= IDENTIFIER:id {: System.out.println("Parameter ID: " + id); :}
             | STRING_CONSTANT:str {: 
                     System.out.println("Parameter String: " + str);
-                    SymbolTable.getInstance().addConstant(str.toString(), "String");
+                    SymbolTable.getInstance().addConstant(str.toString(), "CTE_STRING");
                 :}
             | COMILLA_ABRE IDENTIFIER:id COMILLA_CIERRA {: 
                     System.out.println("Parameter String comillas: " + id);

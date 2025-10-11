@@ -8,13 +8,13 @@ import java.nio.file.Paths;
 
 public final class FileOutputWriter {
 
-    private static final String OUTPUT_DIRECTORY  = "target/output";
+    private static final String OUTPUT_DIRECTORY  = ".";
 
     private FileOutputWriter(){}
 
     public static void writeOutput(String fileName, FileGenerator fileGenerator) {
         createOutputDirectory();
-      try(FileWriter fileWriter = new FileWriter("%s/%s".formatted(OUTPUT_DIRECTORY, fileName))) {
+      try(FileWriter fileWriter = new FileWriter(fileName)) {
           fileGenerator.generate(fileWriter);
           fileWriter.flush();
       } catch (IOException e) {

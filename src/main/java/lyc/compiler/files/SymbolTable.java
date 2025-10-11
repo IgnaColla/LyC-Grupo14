@@ -70,6 +70,23 @@ public class SymbolTable {
         symbols.clear();
     }
 
+    public void updateVariablesWithType(String type) {
+        // Actualiza las variables que tienen tipo "-" con el tipo correcto
+        for (Symbol symbol : symbols.values()) {
+            if (symbol.getCategory().equals("VARIABLE") && symbol.getType().equals("-")) {
+                symbol.setType(type);
+            }
+        }
+    }
+
+    public void updateVariableType(String name, String type) {
+        // Actualiza el tipo de una variable específica
+        Symbol symbol = symbols.get(name);
+        if (symbol != null && symbol.getCategory().equals("VARIABLE")) {
+            symbol.setType(type);
+        }
+    }
+
     public Collection<Symbol> getSymbols() {
         return symbols.values();
     }
@@ -95,5 +112,6 @@ public class SymbolTable {
         public String getCategory() { return category; }
         public String getType() { return type; }
         public String getValue() { return value; }
+        public void setType(String type) { this.type = type; }
     }
 }

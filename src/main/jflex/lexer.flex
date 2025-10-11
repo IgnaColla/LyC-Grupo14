@@ -94,7 +94,21 @@ Comment = "#+"[^]*"+#"
                                          }
 
   /* Constants */
-  {FloatConstant}                        { return symbol(ParserSym.FLOAT_CONSTANT, yytext()); }
+  {FloatConstant}                        { 
+                                            String floatStr = yytext();
+                                            try {
+                                              double value = Double.parseDouble(floatStr);
+                                              if (value > Float.MAX_VALUE) {
+                                                throw new InvalidFloatException("Float out of range: " + floatStr);
+                                              }
+                                              if (value < -Float.MAX_VALUE) {
+                                                throw new InvalidFloatException("Float out of range: " + floatStr);
+                                              }
+                                            } catch (NumberFormatException e) {
+                                              throw new InvalidFloatException("Invalid float format: " + floatStr);
+                                            }
+                                            return symbol(ParserSym.FLOAT_CONSTANT, floatStr);
+                                         }
   {IntegerConstant}                      { 
                                             String intStr = yytext();
                                             try {
