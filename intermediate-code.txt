@@ -1,0 +1,60 @@
+=============================================
+    CODIGO INTERMEDIO
+=============================================
+
+// DECLARE a1 : Float
+// DECLARE b1 : Float
+// DECLARE variable1 : Int
+// DECLARE p1 : String
+// DECLARE p2 : String
+// DECLARE p3 : String
+// DECLARE a : Float
+// DECLARE b : Float
+// DECLARE c : Float
+// DECLARE r : Float
+// DECLARE f : Float
+// DECLARE z : Float
+// DECLARE x : Float
+// DECLARE areaMax : Float
+// DECLARE dateC : String
+// DECLARE base : Float
+// DECLARE var1 : Float
+
+_t0 = 1
+a = _t0
+_t1 = 1
+b = _t1
+_t2 = 2
+c = _t2
+_t3 = 27 - c
+_t4 = _t3
+x = _t4
+_t5 = r + 500
+_t6 = _t5
+x = _t6
+_t7 = 34 * 3
+_t8 = _t7
+x = _t8
+_t9 = z / f
+_t10 = _t9
+x = _t10
+_t11 = 99999.99
+a = _t11
+_t12 = 99.
+a = _t12
+_t13 = .9999
+a = _t13
+_t14 = "@sdADaSjfla%dfg"
+b = _t14
+_t15 = "asldk  fh sjf"
+b = _t15
+_t16 = 2
+z = _t16
+_t17 = 3.8
+x = _t17
+_t18 = null
+areaMax = _t18
+_t19 = null
+dateC = _t19
+
+=============================================

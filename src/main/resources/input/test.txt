@@ -2,6 +2,11 @@ init {
     a1, b1 : Float
     variable1 : Int
     p1, p2, p3 : String
+    a, b, c, r, f, z, x : Float
+    areaMax : Float
+    dateC : String
+    base : Float
+    var1 : Float
 }
  
 a = 1
@@ -10,7 +15,7 @@ c = 2
  
 if (a > b AND c > b)
 {
-    write("a es mas grande que b y c es mas grande que b")
+    write("a > b y c > b")
 }
  
 x = 27 - c
@@ -51,7 +56,7 @@ c = 2
  
 if (a > b OR c > b)
 {
-    write("a es mas grande que b o c es mas grande que b")
+    write("a > b o c > b")
 }
  
 read(base) #+ base es una variable +#

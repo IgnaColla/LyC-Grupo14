@@ -126,7 +126,6 @@ BlockComment = "/*"[^]*"*/"
                                             }
                                             return symbol(ParserSym.FLOAT_CONSTANT, floatStr);
                                          }
-
   {IntegerConstant}                      { 
                                             String intStr = yytext();
                                             try {

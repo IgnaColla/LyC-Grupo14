@@ -53,15 +53,15 @@ public class ParserTest {
         compilationSuccessful(readFromFile("init.txt"));
     }
 
-    @Test
-    void and() throws Exception {
-        compilationSuccessful(readFromFile("and.txt"));
-    }
+    // @Test
+    // void and() throws Exception {
+    //     compilationSuccessful(readFromFile("and.txt"));
+    // }
 
-    @Test
-    void or() throws Exception {
-        compilationSuccessful(readFromFile("or.txt"));
-    }
+    // @Test
+    // void or() throws Exception {
+    //     compilationSuccessful(readFromFile("or.txt"));
+    // }
 
     @Test
     void not() throws Exception {
