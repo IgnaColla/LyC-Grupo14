@@ -5,9 +5,9 @@ import lyc.compiler.factories.FileFactory;
 import lyc.compiler.factories.ParserFactory;
 import lyc.compiler.files.FileOutputWriter;
 import lyc.compiler.files.SymbolTableGenerator;
+import lyc.compiler.utils.CodeGenerator;
+import lyc.compiler.utils.SemanticChecker;
 import lyc.compiler.files.IntermediateCodeGenerator;
-import lyc.compiler.codegen.CodeGenerator;
-import lyc.compiler.semantic.SemanticChecker;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -26,6 +26,7 @@ public final class Compiler {
             // Limpiar para nueva compilación
             CodeGenerator.clear();
             SemanticChecker.clear();
+            lyc.compiler.utils.ASTHolder.clear();
             
             // Parsear
             Parser parser = ParserFactory.create(reader);
@@ -38,8 +39,9 @@ public final class Compiler {
             }
             
             // Generar archivos
-            FileOutputWriter.writeOutput("symbol-table.txt", new SymbolTableGenerator());
+            // FileOutputWriter.writeOutput("symbols-table.txt", new SymbolTableGenerator());
             FileOutputWriter.writeOutput("intermediate-code.txt", new IntermediateCodeGenerator());
+            FileOutputWriter.writeOutput("final.asm", new SymbolTableGenerator());
             
             System.out.println("\n[OK] Compilación exitosa");
             System.out.println("Archivos generados:");

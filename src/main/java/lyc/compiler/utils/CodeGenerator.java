@@ -1,4 +1,4 @@
-package lyc.compiler.codegen;
+package lyc.compiler.utils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -5,31 +5,48 @@
 | NAME                                | TYPE          | VALUE                               | LENGTH   |
 --------------------------------------------------------------------------------------------------------------
 | p1                                  | String        | -                                   | -        |
-| ewr                                 | -             | -                                   | -        |
 | p2                                  | String        | -                                   | -        |
+| 4.0                                 | CTE_FLOAT     | 4.0                                 | -        |
 | p3                                  | String        | -                                   | -        |
-| "a es mas grande que b"             | CTE_STRING    | "a es mas grande que b"             | 21       |
-| 4                                   | CTE_INTEGER   | 4                                   | -        |
-| b1                                  | Float         | -                                   | -        |
-| 99999.99                            | CTE_FLOAT     | 99999.99                            | -        |
+| 27                                  | CTE_INTEGER   | 27                                  | -        |
 | "a es mas chico o igual a b"        | CTE_STRING    | "a es mas chico o igual a b"        | 26       |
-| .9999                               | CTE_FLOAT     | .9999                               | -        |
+| 99.                                 | CTE_FLOAT     | 99.                                 | -        |
 | "a no es mas grande que b"          | CTE_STRING    | "a no es mas grande que b"          | 24       |
-| 1                                   | CTE_INTEGER   | 1                                   | -        |
+| .9999                               | CTE_FLOAT     | .9999                               | -        |
+| "asldk  fh sjf"                     | CTE_STRING    | "asldk  fh sjf"                     | 13       |
+| b1                                  | Float         | -                                   | -        |
+| "a > b o c > b"                     | CTE_STRING    | "a > b o c > b"                     | 13       |
+| 0                                   | CTE_INTEGER   | 0                                   | -        |
+| 2.5                                 | CTE_FLOAT     | 2.5                                 | -        |
+| areaMax                             | Float         | -                                   | -        |
+| "a > b y c > b"                     | CTE_STRING    | "a > b y c > b"                     | 13       |
+| "@sdADaSjfla%dfg"                   | CTE_STRING    | "@sdADaSjfla%dfg"                   | 15       |
+| 99999.99                            | CTE_FLOAT     | 99999.99                            | -        |
+| "ewr"                               | CTE_STRING    | "ewr"                               | 3        |
+| 34                                  | CTE_INTEGER   | 34                                  | -        |
+| var1                                | Float         | -                                   | -        |
 | variable1                           | Int           | -                                   | -        |
 | a                                   | Float         | -                                   | -        |
 | b                                   | Float         | -                                   | -        |
 | c                                   | Float         | -                                   | -        |
-| d                                   | Float         | -                                   | -        |
-| "asldk  fh sjf"                     | CTE_STRING    | "asldk  fh sjf"                     | 13       |
-| e                                   | Float         | -                                   | -        |
-| "@sdADaSjfla%dfg"                   | CTE_STRING    | "@sdADaSjfla%dfg"                   | 15       |
-| 99.                                 | CTE_FLOAT     | 99.                                 | -        |
+| 6                                   | CTE_INTEGER   | 6                                   | -        |
+| f                                   | Float         | -                                   | -        |
+| 3.8                                 | CTE_FLOAT     | 3.8                                 | -        |
 | 2                                   | CTE_INTEGER   | 2                                   | -        |
 | a1                                  | Float         | -                                   | -        |
+| r                                   | Float         | -                                   | -        |
+| 1                                   | CTE_INTEGER   | 1                                   | -        |
+| "a es mas grande que b"             | CTE_STRING    | "a es mas grande que b"             | 21       |
+| x                                   | Float         | -                                   | -        |
 | 3                                   | CTE_INTEGER   | 3                                   | -        |
-| 21                                  | CTE_INTEGER   | 21                                  | -        |
+| z                                   | Float         | -                                   | -        |
+| dateC                               | String        | -                                   | -        |
+| 3                                   | CTE_INTEGER   | 3                                   | -        |
+| 12                                  | CTE_INTEGER   | 12                                  | -        |
+| 2                                   | CTE_INTEGER   | 2                                   | -        |
+| base                                | Float         | -                                   | -        |
+| 500                                 | CTE_INTEGER   | 500                                 | -        |
 ==============================================================================================================
-Total symbols: 25
+Total symbols: 42
 ==============================================================================================================
 

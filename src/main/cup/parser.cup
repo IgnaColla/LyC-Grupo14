@@ -4,8 +4,10 @@ package lyc.compiler;
 import java_cup.runtime.*;
 import lyc.compiler.files.TypeHelper;
 import lyc.compiler.files.SymbolTable;
-import lyc.compiler.codegen.CodeGenerator;
-import lyc.compiler.semantic.SemanticChecker;
+import lyc.compiler.utils.CodeGenerator;
+import lyc.compiler.utils.SemanticChecker;
+import lyc.compiler.utils.ASTHolder;
+import lyc.compiler.icg_tree.*;
 import java.util.ArrayList;
 import java.util.List;
 %}
@@ -57,57 +59,69 @@ terminal COMILLA_ABRE;
 terminal COMILLA_CIERRA;
 
 // Non Terminals
-non terminal assignment;
-non terminal block;
+non terminal TNode assignment;
+non terminal List<TNode> block;
 non terminal String comparison;
-non terminal String condition;
-non terminal coordinate;
-non terminal coordinate_list;
-non terminal coordinate_value;
+non terminal TNode condition;
+non terminal TriangleAreaNode.Coordinate coordinate;
+non terminal List<TriangleAreaNode.Coordinate> coordinate_list;
+non terminal String coordinate_value;
 non terminal declaration;
 non terminal declaration_list;
-non terminal String expression;
-non terminal String factor;
-non terminal function;
+non terminal TNode expression;
+non terminal TNode factor;
+non terminal TNode function;
 non terminal init_block;
-non terminal String logical_and;
-non terminal String logical_expression;
-non terminal String logical_term;
-non terminal matched_sentence;
+non terminal TNode logical_and;
+non terminal TNode logical_expression;
+non terminal TNode logical_term;
+non terminal TNode matched_sentence;
 non terminal String parameter;
-non terminal parameter_date;
-non terminal program;
-non terminal sentence;
-non terminal sentence_conv_date;
-non terminal sentence_list;
-non terminal sentence_read; 
-non terminal sentence_triangle_area;
-non terminal sentence_while;
-non terminal sentence_write;
-non terminal String term;
-non terminal triangle;
+non terminal ConvDateNode parameter_date;
+non terminal ProgramNode program;
+non terminal TNode sentence;
+non terminal ConvDateNode sentence_conv_date;
+non terminal List<TNode> sentence_list;
+non terminal TNode sentence_read; 
+non terminal TriangleAreaNode sentence_triangle_area;
+non terminal TNode sentence_while;
+non terminal TNode sentence_write;
+non terminal TNode term;
+non terminal List<TriangleAreaNode.Coordinate> triangle;
 non terminal String type;
-non terminal unmatched_sentence;
+non terminal TNode unmatched_sentence;
 non terminal List variable_list;
 
 // Start Symbol Definition
 start with program;
 
-program ::= init_block sentence_list {: 
-                System.out.println("Program with init completed"); 
+program ::= init_block sentence_list:stmts {: 
+                System.out.println("Program with init completed");
+                ProgramNode prog = new ProgramNode(stmts);
+                ASTHolder.setAST(prog);
                 SymbolTable.getInstance().generateSymbolTableFile();
+                RESULT = prog;
             :}
-          | sentence_list {: 
-                System.out.println("Program completed"); 
+          | sentence_list:stmts {: 
+                System.out.println("Program completed");
+                ProgramNode prog = new ProgramNode(stmts);
+                ASTHolder.setAST(prog);
                 SymbolTable.getInstance().generateSymbolTableFile();
+                RESULT = prog;
             :}
           | init_block {: 
-                System.out.println("Program with init only"); 
+                System.out.println("Program with init only");
+                ProgramNode prog = new ProgramNode(new ArrayList<TNode>());
+                ASTHolder.setAST(prog);
                 SymbolTable.getInstance().generateSymbolTableFile();
+                RESULT = prog;
             :}
           | {: 
-                System.out.println("Empty program"); 
+                System.out.println("Empty program");
+                ProgramNode prog = new ProgramNode(new ArrayList<TNode>());
+                ASTHolder.setAST(prog);
                 SymbolTable.getInstance().generateSymbolTableFile();
+                RESULT = prog;
             :};
 
 init_block ::= INIT LLAVE_ABRE declaration_list LLAVE_CIERRA {: 
@@ -159,77 +173,157 @@ type ::= FLOAT_TYPE {:
             RESULT = "String";
         :};
 
-sentence_list ::= sentence_list sentence {: System.out.println("Multiple sentences"); :}
-                | sentence {: System.out.println("First sentence"); :};
+sentence_list ::= sentence_list:list sentence:stmt {: 
+                        System.out.println("Multiple sentences");
+                        list.add(stmt);
+                        RESULT = list;
+                    :}
+                | sentence:stmt {: 
+                        System.out.println("First sentence");
+                        List<TNode> list = new ArrayList<TNode>();
+                        list.add(stmt);
+                        RESULT = list;
+                    :};
 
-sentence ::= matched_sentence {: :}
-           | unmatched_sentence {: :};
+sentence ::= matched_sentence:stmt {: RESULT = stmt; :}
+           | unmatched_sentence:stmt {: RESULT = stmt; :};
 
-matched_sentence ::= assignment {: System.out.println("Assignment sentence"); :} 
-                   | sentence_read {: System.out.println("Function call sentence read"); :}
-                   | sentence_write {: System.out.println("Function call sentence write"); :}
-                   | IF PARENTESIS_ABRE condition PARENTESIS_CIERRA matched_sentence ELSE matched_sentence {: System.out.println("Matched If-else completed"); :}
-                   | sentence_while {: System.out.println("Sentence While"); :}
-                   | sentence_conv_date {: System.out.println("Function convDate"); :}
-                   | block {: System.out.println("Block as sentence"); :};
+matched_sentence ::= assignment:stmt {: 
+                        System.out.println("Assignment sentence");
+                        RESULT = stmt;
+                    :} 
+                   | sentence_read:stmt {: 
+                        System.out.println("Function call sentence read");
+                        RESULT = stmt;
+                    :}
+                   | sentence_write:stmt {: 
+                        System.out.println("Function call sentence write");
+                        RESULT = stmt;
+                    :}
+                   | IF PARENTESIS_ABRE condition:cond PARENTESIS_CIERRA matched_sentence:thenStmt ELSE matched_sentence:elseStmt {: 
+                        System.out.println("Matched If-else completed");
+                        List<TNode> thenBlock = new ArrayList<TNode>();
+                        thenBlock.add(thenStmt);
+                        List<TNode> elseBlock = new ArrayList<TNode>();
+                        elseBlock.add(elseStmt);
+                        RESULT = new IfNode(cond, thenBlock, elseBlock);
+                    :}
+                   | sentence_while:stmt {: 
+                        System.out.println("Sentence While");
+                        RESULT = stmt;
+                    :}
+                   | sentence_conv_date:stmt {: 
+                        System.out.println("Function convDate");
+                        RESULT = stmt;
+                    :}
+                   | block:stmts {: 
+                        System.out.println("Block as sentence");
+                        // Crear un nodo ficticio que contenga todas las sentencias del bloque
+                        // Para simplificar, devolvemos la primera (o podríamos crear un BlockNode)
+                        RESULT = stmts.size() > 0 ? stmts.get(0) : new LiteralNode("");
+                    :};
 
-unmatched_sentence ::= IF PARENTESIS_ABRE condition PARENTESIS_CIERRA sentence {: System.out.println("Unmatched If completed"); :}
-                     | IF PARENTESIS_ABRE condition PARENTESIS_CIERRA matched_sentence ELSE unmatched_sentence {: System.out.println("If with unmatched else"); :};
+unmatched_sentence ::= IF PARENTESIS_ABRE condition:cond PARENTESIS_CIERRA sentence:stmt {: 
+                            System.out.println("Unmatched If completed");
+                            List<TNode> thenBlock = new ArrayList<TNode>();
+                            thenBlock.add(stmt);
+                            RESULT = new IfNode(cond, thenBlock);
+                        :}
+                     | IF PARENTESIS_ABRE condition:cond PARENTESIS_CIERRA matched_sentence:thenStmt ELSE unmatched_sentence:elseStmt {: 
+                            System.out.println("If with unmatched else");
+                            List<TNode> thenBlock = new ArrayList<TNode>();
+                            thenBlock.add(thenStmt);
+                            List<TNode> elseBlock = new ArrayList<TNode>();
+                            elseBlock.add(elseStmt);
+                            RESULT = new IfNode(cond, thenBlock, elseBlock);
+                        :};
 
-sentence_while ::= WHILE PARENTESIS_ABRE condition PARENTESIS_CIERRA block {: System.out.println("While completed"); :};
+sentence_while ::= WHILE PARENTESIS_ABRE condition:cond PARENTESIS_CIERRA block:body {: 
+                        System.out.println("While completed");
+                        RESULT = new WhileNode(cond, body);
+                    :};
 
-sentence_conv_date ::= CONV_DATE PARENTESIS_ABRE parameter_date PARENTESIS_CIERRA  {: System.out.println("Function call convDate"); :};
+sentence_conv_date ::= CONV_DATE PARENTESIS_ABRE parameter_date:date PARENTESIS_CIERRA  {: 
+                            System.out.println("Function call convDate");
+                            RESULT = date;
+                        :};
 
-condition ::= logical_expression {: System.out.println("Condition evaluated"); :};
+condition ::= logical_expression:expr {: 
+                    System.out.println("Condition evaluated");
+                    RESULT = expr;
+                :};
 
-logical_expression ::= logical_expression OR logical_and {: System.out.println("Logical OR"); :}
-                     | logical_and {: :};
+logical_expression ::= logical_expression:left OR logical_and:right {: 
+                            System.out.println("Logical OR");
+                            RESULT = new ConditionNode("OR", left, right);
+                        :}
+                     | logical_and:expr {: RESULT = expr; :};
 
-logical_and ::= logical_and AND logical_term {: System.out.println("Logical AND"); :}
-             | logical_term {: :};
+logical_and ::= logical_and:left AND logical_term:right {: 
+                    System.out.println("Logical AND");
+                    RESULT = new ConditionNode("AND", left, right);
+                :}
+             | logical_term:expr {: RESULT = expr; :};
 
-logical_term ::= expression comparison expression {: System.out.println("comparison"); :}
-              | NOT logical_term {: System.out.println("NOT operation"); :};
+logical_term ::= expression:left comparison:op expression:right {: 
+                    System.out.println("comparison");
+                    RESULT = new ConditionNode(op, left, right);
+                :}
+              | NOT logical_term:operand {: 
+                    System.out.println("NOT operation");
+                    RESULT = new ConditionNode("NOT", operand);
+                :};
 
-comparison ::= MAYOR {: System.out.println("Operator: >"); :}
-             | MENOR {: System.out.println("Operator: <"); :}
-             | IGUAL {: System.out.println("Operator: =="); :}
-             | DISTINTO {: System.out.println("Operator: !="); :}
-             | MAYOR_IGUAL {: System.out.println("Operator: >="); :}
-             | MENOR_IGUAL {: System.out.println("Operator: <="); :};
+comparison ::= MAYOR {: 
+                    System.out.println("Operator: >");
+                    RESULT = ">";
+                :}
+             | MENOR {: 
+                    System.out.println("Operator: <");
+                    RESULT = "<";
+                :}
+             | IGUAL {: 
+                    System.out.println("Operator: ==");
+                    RESULT = "==";
+                :}
+             | DISTINTO {: 
+                    System.out.println("Operator: !=");
+                    RESULT = "!=";
+                :}
+             | MAYOR_IGUAL {: 
+                    System.out.println("Operator: >=");
+                    RESULT = ">=";
+                :}
+             | MENOR_IGUAL {: 
+                    System.out.println("Operator: <=");
+                    RESULT = "<=";
+                :};
 
-block ::= LLAVE_ABRE sentence_list LLAVE_CIERRA {: System.out.println("Block completed"); :};
+block ::= LLAVE_ABRE sentence_list:stmts LLAVE_CIERRA {: 
+                System.out.println("Block completed");
+                RESULT = stmts;
+            :};
 
 assignment ::= IDENTIFIER:id ASSIG expression:expr {: 
-                        System.out.println("Assignment: " + id + " = " + expr);
-                        String temp = CodeGenerator.newTemp();
-                        CodeGenerator.add(temp + " = " + expr);
-                        CodeGenerator.add(id + " = " + temp);
+                        System.out.println("Assignment: " + id + " = (expr)");
                         // Validar que la variable existe
                         SemanticChecker.checkExists(id.toString());
-                        RESULT = id.toString();
+                        RESULT = new AssignmentNode(id.toString(), expr);
                     :}
              | IDENTIFIER:id ASSIG function:func {: 
-                        System.out.println("Assignment function: " + id + " = " + func);
-                        String temp = CodeGenerator.newTemp();
-                        CodeGenerator.add(temp + " = " + func);
-                        CodeGenerator.add(id + " = " + temp);
+                        System.out.println("Assignment function: " + id + " = (func)");
                         // Validar que la variable existe
                         SemanticChecker.checkExists(id.toString());
-                        RESULT = id.toString();
+                        RESULT = new AssignmentNode(id.toString(), func);
                     :};
 
 expression ::= expression:expr1 PLUS term:term1 {: 
                         System.out.println("+");
-                        String temp = CodeGenerator.newTemp();
-                        CodeGenerator.add(temp + " = " + expr1 + " + " + term1);
-                        RESULT = temp;
+                        RESULT = new ExpressionNode("+", expr1, term1);
                     :}
              | expression:expr1 SUB term:term1 {: 
                         System.out.println("-");
-                        String temp = CodeGenerator.newTemp();
-                        CodeGenerator.add(temp + " = " + expr1 + " - " + term1);
-                        RESULT = temp;
+                        RESULT = new ExpressionNode("-", expr1, term1);
                     :}
              | term:term1 {: 
                         System.out.println("Expression = Term");
@@ -238,15 +332,11 @@ expression ::= expression:expr1 PLUS term:term1 {:
 
 term ::= term:term1 MULT factor:fact1 {: 
                     System.out.println("*");
-                    String temp = CodeGenerator.newTemp();
-                    CodeGenerator.add(temp + " = " + term1 + " * " + fact1);
-                    RESULT = temp;
+                    RESULT = new ExpressionNode("*", term1, fact1);
                 :}
        | term:term1 DIV factor:fact1 {: 
                     System.out.println("/");
-                    String temp = CodeGenerator.newTemp();
-                    CodeGenerator.add(temp + " = " + term1 + " / " + fact1);
-                    RESULT = temp;
+                    RESULT = new ExpressionNode("/", term1, fact1);
                 :}
        | factor:fact1 {: 
                     System.out.println("Term = factor");
@@ -257,82 +347,119 @@ factor ::= IDENTIFIER:id  {:
                          System.out.println("Id: " + id);
                          // Verificar que la variable existe
                          SemanticChecker.checkExists(id.toString());
-                         RESULT = id.toString();
+                         RESULT = new LiteralNode(id.toString());
                     :}
          | INTEGER_CONSTANT:constant {: 
-                        System.out.println("Integer: " + constant ); 
+                        System.out.println("Integer: " + constant );
                         SymbolTable.getInstance().addConstant(constant.toString(), "CTE_INTEGER");
-                        RESULT = constant.toString();
+                        RESULT = new LiteralNode(constant.toString());
                     :}
          | FLOAT_CONSTANT:constant {: 
-                        System.out.println("Float: " + constant ); 
+                        System.out.println("Float: " + constant );
                         SymbolTable.getInstance().addConstant(constant.toString(), "CTE_FLOAT");
-                        RESULT = constant.toString();
+                        RESULT = new LiteralNode(constant.toString());
                     :}
          | STRING_CONSTANT:constant {: 
                         System.out.println("String: " + constant ); 
                         SymbolTable.getInstance().addConstant(constant.toString(), "CTE_STRING");
-                        RESULT = constant.toString();
+                        RESULT = new LiteralNode(constant.toString());
                     :}
          | PARENTESIS_ABRE expression:expr PARENTESIS_CIERRA {: 
                         System.out.println("Factor = (Expression)");
                         RESULT = expr;
                     :}
          | NEGATIVE_INTEGER_CONSTANT:constant {: 
-                        System.out.println("Negative integer: " + constant); 
+                        System.out.println("Negative integer: " + constant);
                         SymbolTable.getInstance().addConstant(constant.toString(), "CTE_INTEGER");
-                        RESULT = constant.toString();
+                        RESULT = new LiteralNode(constant.toString());
                     :}
          | NEGATIVE_FLOAT_CONSTANT:constant {: 
-                        System.out.println("Negative float: " + constant); 
+                        System.out.println("Negative float: " + constant);
                         SymbolTable.getInstance().addConstant(constant.toString(), "CTE_FLOAT");
-                        RESULT = constant.toString();
+                        RESULT = new LiteralNode(constant.toString());
                     :}
          | SUB PARENTESIS_ABRE expression:expr PARENTESIS_CIERRA {: 
                         System.out.println("Negative expression: -(Expression)");
-                        String temp = CodeGenerator.newTemp();
-                        CodeGenerator.add(temp + " = -" + expr);
-                        RESULT = temp;
+                        RESULT = new ExpressionNode("-", new LiteralNode("0"), expr);
                     :};
 
-parameter ::= IDENTIFIER:id {: System.out.println("Parameter ID: " + id); :}
+parameter ::= IDENTIFIER:id {: 
+                    System.out.println("Parameter ID: " + id);
+                    RESULT = id.toString();
+                :}
             | STRING_CONSTANT:str {: 
                     System.out.println("Parameter String: " + str);
                     SymbolTable.getInstance().addConstant(str.toString(), "CTE_STRING");
+                    RESULT = str.toString();
                 :}
             | COMILLA_ABRE IDENTIFIER:id COMILLA_CIERRA {: 
                     System.out.println("Parameter String comillas: " + id);
                     SymbolTable.getInstance().addVariable(id.toString(), "String");
+                    RESULT = id.toString();
                 :};
 
-sentence_read ::= READ PARENTESIS_ABRE parameter:param PARENTESIS_CIERRA {: System.out.println("Function read"); :};
+sentence_read ::= READ PARENTESIS_ABRE parameter:param PARENTESIS_CIERRA {: 
+                        System.out.println("Function read");
+                        RESULT = new ReadNode(param);
+                    :};
 
-sentence_write ::= WRITE PARENTESIS_ABRE parameter:param PARENTESIS_CIERRA {: System.out.println("Function write"); :};
+sentence_write ::= WRITE PARENTESIS_ABRE parameter:param PARENTESIS_CIERRA {: 
+                        System.out.println("Function write");
+                        RESULT = new WriteNode(param);
+                    :};
 
 parameter_date ::= INTEGER_CONSTANT:day SUB INTEGER_CONSTANT:month SUB INTEGER_CONSTANT:year 
-                 {: System.out.println("Date parameter: " + day + "-" + month + "-" + year); :}; 
+                 {: 
+                    System.out.println("Date parameter: " + day + "-" + month + "-" + year);
+                    RESULT = new ConvDateNode(day.toString(), month.toString(), year.toString());
+                 :}; 
 
-function ::= sentence_conv_date {: System.out.println("Function convDate assignment: "); :}
-          | sentence_triangle_area {: System.out.println("Function triangleAreaMaximum assignment: "); :};
+function ::= sentence_conv_date:func {: 
+                    System.out.println("Function convDate assignment: ");
+                    RESULT = func;
+                :}
+          | sentence_triangle_area:func {: 
+                    System.out.println("Function triangleAreaMaximum assignment: ");
+                    RESULT = func;
+                :};
 
-sentence_triangle_area ::= TRIANGLE_AREA_MAXIMUM PARENTESIS_ABRE triangle PUNTO_Y_COMA triangle PARENTESIS_CIERRA 
-                          {: System.out.println("Function call triangleAreaMaximum"); :};
+sentence_triangle_area ::= TRIANGLE_AREA_MAXIMUM PARENTESIS_ABRE triangle:t1 PUNTO_Y_COMA triangle:t2 PARENTESIS_CIERRA 
+                          {: 
+                            System.out.println("Function call triangleAreaMaximum");
+                            RESULT = new TriangleAreaNode(t1, t2);
+                          :};
 
-triangle ::= CORCHETE_ABRE coordinate_list CORCHETE_CIERRA {: System.out.println("Triangle defined"); :};
+triangle ::= CORCHETE_ABRE coordinate_list:coords CORCHETE_CIERRA {: 
+                    System.out.println("Triangle defined");
+                    RESULT = coords;
+                :};
 
-coordinate_list ::= coordinate PUNTO_Y_COMA coordinate PUNTO_Y_COMA coordinate  {: System.out.println("Multiple coordinates"); :};
+coordinate_list ::= coordinate:c1 PUNTO_Y_COMA coordinate:c2 PUNTO_Y_COMA coordinate:c3  {: 
+                        System.out.println("Multiple coordinates");
+                        List<TriangleAreaNode.Coordinate> coords = new ArrayList<>();
+                        coords.add(c1);
+                        coords.add(c2);
+                        coords.add(c3);
+                        RESULT = coords;
+                    :};
 
-coordinate ::= coordinate_value COMA coordinate_value {: System.out.println("Coordinate pair"); :};
+coordinate ::= coordinate_value:x COMA coordinate_value:y {: 
+                    System.out.println("Coordinate pair");
+                    RESULT = new TriangleAreaNode.Coordinate(x, y);
+                :};
 
 coordinate_value ::= INTEGER_CONSTANT:val {: 
-                        System.out.println("Integer coordinate: " + val); 
+                        System.out.println("Integer coordinate: " + val);
                         SymbolTable.getInstance().addConstant(val.toString(), "Int");
+                        RESULT = val.toString();
                     :}
                    | FLOAT_CONSTANT:val {: 
-                        System.out.println("Float coordinate: " + val); 
+                        System.out.println("Float coordinate: " + val);
                         SymbolTable.getInstance().addConstant(val.toString(), "Float");
+                        RESULT = val.toString();
                     :}
                    | IDENTIFIER:id {: 
-                        System.out.println("Variable coordinate: " + id); 
+                        System.out.println("Variable coordinate: " + id);
                         SymbolTable.getInstance().addVariable(id.toString(), "-");
+                        RESULT = id.toString();
                     :};

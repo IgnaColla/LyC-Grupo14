@@ -131,13 +131,13 @@ public class SymbolTable {
         return symbols.size();
     }
  
-    public void updateVariablesWithType(String type) {
-        for (Symbol symbol : symbols.values()) {
-            if (symbol.getType().equals("-") && !symbol.isConstant()) {
-                symbol.setType(type);
-            }
-        }
-    }
+    // public void updateVariablesWithType(String type) {
+    //     for (Symbol symbol : symbols.values()) {
+    //         if (symbol.getType().equals("-") && !symbol.isConstant()) {
+    //             symbol.setType(type);
+    //         }
+    //     }
+    // }
 
     public static class Symbol {
         private String name;
@@ -171,6 +171,5 @@ public class SymbolTable {
         public String getType() { return type; }
         public String getValue() { return value; }
         public Integer getLength() { return length; }
-        public void setType(String type) { this.type = type; }
     }
 }

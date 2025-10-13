@@ -1,25 +1,31 @@
 package lyc.compiler.files;
 
-import lyc.compiler.codegen.CodeGenerator;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
+
+import lyc.compiler.icg_tree.ProgramNode;
+import lyc.compiler.utils.ASTHolder;
 
 /**
- * Escribe el código intermedio al archivo
+ * Escribe el código intermedio al archivo desde el AST
  */
 public class IntermediateCodeGenerator implements FileGenerator {
 
     @Override
     public void generate(FileWriter fileWriter) throws IOException {
         fileWriter.write("=============================================\n");
-        fileWriter.write("    CODIGO INTERMEDIO\n");
+        fileWriter.write("    CODIGO INTERMEDIO (Desde AST)\n");
         fileWriter.write("=============================================\n\n");
         
-        List<String> code = CodeGenerator.getCode();
+        // Obtener el AST
+        ProgramNode ast = ASTHolder.getAST();
         
-        for (String line : code) {
-            fileWriter.write(line + "\n");
+        if (ast != null) {
+            // Generar código desde el AST
+            String code = ast.toCode();
+            fileWriter.write(code + "\n");
+        } else {
+            fileWriter.write("// No se generó AST\n");
         }
         
         fileWriter.write("\n=============================================\n");

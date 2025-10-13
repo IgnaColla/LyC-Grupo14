@@ -82,8 +82,8 @@ FloatConstant = {Digit}*\.{Digit}+ | {Digit}+\.{Digit}*
 NegativeFloatConstant = -{FloatConstant}
 StringConstant = \"[^\"]*\"
 TextContent = {Letter} ({Letter}|{Digit})*
-Comment = "#+"[^]*"+#"
-BlockComment = "/*"[^]*"*/"
+Comment = "#+"([^+]|"+"+[^#])*"+#"
+BlockComment = "/*"([^*]|"*"+[^/])*"*/"
 
 %%
 
