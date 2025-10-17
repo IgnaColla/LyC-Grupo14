@@ -218,8 +218,6 @@ matched_sentence ::= assignment:stmt {:
                     :}
                    | block:stmts {: 
                         System.out.println("Block as sentence");
-                        // Crear un nodo ficticio que contenga todas las sentencias del bloque
-                        // Para simplificar, devolvemos la primera (o podríamos crear un BlockNode)
                         RESULT = stmts.size() > 0 ? stmts.get(0) : new LiteralNode("");
                     :};
 
@@ -306,13 +304,11 @@ block ::= LLAVE_ABRE sentence_list:stmts LLAVE_CIERRA {:
 
 assignment ::= IDENTIFIER:id ASSIG expression:expr {: 
                         System.out.println("Assignment: " + id + " = (expr)");
-                        // Validar que la variable existe
                         SemanticChecker.checkExists(id.toString());
                         RESULT = new AssignmentNode(id.toString(), expr);
                     :}
              | IDENTIFIER:id ASSIG function:func {: 
                         System.out.println("Assignment function: " + id + " = (func)");
-                        // Validar que la variable existe
                         SemanticChecker.checkExists(id.toString());
                         RESULT = new AssignmentNode(id.toString(), func);
                     :};
@@ -345,7 +341,6 @@ term ::= term:term1 MULT factor:fact1 {:
 
 factor ::= IDENTIFIER:id  {: 
                          System.out.println("Id: " + id);
-                         // Verificar que la variable existe
                          SemanticChecker.checkExists(id.toString());
                          RESULT = new LiteralNode(id.toString());
                     :}

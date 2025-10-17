@@ -107,7 +107,7 @@ public class SymbolTable {
     }
 
     public void updateVariablesWithType(String type) {
-        // Actualiza las variables que tienen tipo "-" con el tipo correcto
+        // Update vars that have "-" with the wright type
         for (Symbol symbol : symbols.values()) {
             if (symbol.getCategory().equals("VARIABLE") && symbol.getType().equals("-")) {
                 symbol.setType(type);
@@ -116,7 +116,7 @@ public class SymbolTable {
     }
 
     public void updateVariableType(String name, String type) {
-        // Actualiza el tipo de una variable específica
+        // Update the type of a specific variable
         Symbol symbol = symbols.get(name);
         if (symbol != null && symbol.getCategory().equals("VARIABLE")) {
             symbol.setType(type);
@@ -130,14 +130,6 @@ public class SymbolTable {
     public int getSymbolCount() {
         return symbols.size();
     }
- 
-    // public void updateVariablesWithType(String type) {
-    //     for (Symbol symbol : symbols.values()) {
-    //         if (symbol.getType().equals("-") && !symbol.isConstant()) {
-    //             symbol.setType(type);
-    //         }
-    //     }
-    // }
 
     public static class Symbol {
         private String name;

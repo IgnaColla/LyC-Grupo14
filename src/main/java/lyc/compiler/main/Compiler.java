@@ -4,6 +4,7 @@ import lyc.compiler.Parser;
 import lyc.compiler.factories.FileFactory;
 import lyc.compiler.factories.ParserFactory;
 import lyc.compiler.files.FileOutputWriter;
+import lyc.compiler.files.GraphvizGenerator;
 import lyc.compiler.files.SymbolTableGenerator;
 import lyc.compiler.utils.CodeGenerator;
 import lyc.compiler.utils.SemanticChecker;
@@ -23,36 +24,32 @@ public final class Compiler {
         }
 
         try (Reader reader = FileFactory.create(args[0])) {
-            // Limpiar para nueva compilación
             CodeGenerator.clear();
             SemanticChecker.clear();
             lyc.compiler.utils.ASTHolder.clear();
-            
-            // Parsear
+
             Parser parser = ParserFactory.create(reader);
             parser.parse();
             
-            // Verificar errores semánticos
             if (SemanticChecker.hasErrors()) {
-                System.err.println("\n[ERROR] Compilación detenida por errores semánticos");
+                System.err.println("\n[ERROR] Compilation failed due to semantic errors");
                 System.exit(1);
             }
-            
-            // Generar archivos
-            // FileOutputWriter.writeOutput("symbols-table.txt", new SymbolTableGenerator());
+
             FileOutputWriter.writeOutput("intermediate-code.txt", new IntermediateCodeGenerator());
+            FileOutputWriter.writeOutput("ast-tree.dot", new GraphvizGenerator());
             FileOutputWriter.writeOutput("final.asm", new SymbolTableGenerator());
-            
-            System.out.println("\n[OK] Compilación exitosa");
-            System.out.println("Archivos generados:");
+
+            System.out.println("\n[OK] Successful compilation");
+            System.out.println("Generated files:");
             System.out.println("  - symbol-table.txt");
             System.out.println("  - intermediate-code.txt");
-            
+
         } catch (IOException e) {
-            System.err.println("Error al leer archivo: " + e.getMessage());
+            System.err.println("Error while reading file: " + e.getMessage());
             System.exit(1);
         } catch (Exception e) {
-            System.err.println("Error de compilación: " + e.getMessage());
+            System.err.println("Compilation error: " + e.getMessage());
             e.printStackTrace();
             System.exit(1);
         }

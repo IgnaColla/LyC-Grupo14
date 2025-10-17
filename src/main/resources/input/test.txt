@@ -8,16 +8,16 @@ init {
     base : Float
     var1 : Float
 }
- 
+
 a = 1
 b = 1
 c = 2
- 
+
 if (a > b AND c > b)
 {
     write("a > b y c > b")
 }
- 
+
 x = 27 - c
 x = r + 500
 x = 34 * 3
@@ -26,7 +26,7 @@ x = z / f
 a = 99999.99
 a = 99.
 a = .9999
- 
+
 b = "@sdADaSjfla%dfg"
 b = "asldk  fh sjf"
  
@@ -40,27 +40,27 @@ else
 {
     write("a es mas chico o igual a b")
 }
- 
+
 a = 1
 b = 1
 c = 2
- 
+
 if (NOT a > b)
 {
     write("a no es mas grande que b")
 }
- 
+
 a = 1
 b = 1
 c = 2
- 
+
 if (a > b OR c > b)
 {
     write("a > b o c > b")
 }
- 
+
 read(base) #+ base es una variable +#
- 
+
 a = 1
 b = 3
  
@@ -72,8 +72,6 @@ while (a > b)
  
 write("ewr")  #+ "ewr" es una cte string +#
 write(var1)  #+ var1 es una variable numérica definida previamente +#
-
-
 
 z = 2
 x = 3.8
