@@ -24,6 +24,7 @@ public class IntermediateCodeGenerator implements FileGenerator {
             fileWriter.write("// Tree not generated\n");
         }
 
+        fileWriter.write("\n+ Dot file for Graphviz visualization generated in 'target/output/ast-tree.dot'");
         fileWriter.write("\n=============================================\n");
     }
 }
