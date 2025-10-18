@@ -11,7 +11,7 @@ public class IntermediateCodeGenerator implements FileGenerator {
     @Override
     public void generate(FileWriter fileWriter) throws IOException {
         fileWriter.write("=============================================\n");
-        fileWriter.write("    INTERMEDIATE CODE (Tree)\n");
+        fileWriter.write("    INTERMEDIATE CODE (For Tree generation)\n");
         fileWriter.write("=============================================\n\n");
 
         // Obtain AST
