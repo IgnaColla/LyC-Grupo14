@@ -25,6 +25,24 @@ import static lyc.compiler.constants.Constants.*;
   private Symbol symbol(int type, Object value) {
     return new Symbol(type, yyline, yycolumn, value);
   }
+
+  // To validate content in comment
+  private boolean isValidCommentChar(char c) {
+    if (Character.isISOControl(c) && c != '\t' && c != '\n' && c != '\r') {
+      return false;
+    }
+
+    return true;
+  }
+
+  private void validateComment(String comment) throws CompilerException {
+    for (int i = 0; i < comment.length(); i++) {
+      char c = comment.charAt(i);
+      if (!isValidCommentChar(c)) {
+        throw new UnknownCharacterException("Invalid character in comment: " + c);
+      }
+    }
+  }
 %}
 
 LineTerminator = \r|\n|\r\n
@@ -64,7 +82,9 @@ FloatConstant = {Digit}*\.{Digit}+ | {Digit}+\.{Digit}*
 NegativeFloatConstant = -{FloatConstant}
 StringConstant = \"[^\"]*\"
 TextContent = {Letter} ({Letter}|{Digit})*
-Comment = "#+"[^]*"+#"
+Comment = "#+"([^+]|"+"+[^#])*"+#"
+BlockComment = "/*"([^*]|"*"+[^/])*"*/"
+
 %%
 
 /* keywords */
@@ -94,7 +114,18 @@ Comment = "#+"[^]*"+#"
                                          }
 
   /* Constants */
-  {FloatConstant}                        { return symbol(ParserSym.FLOAT_CONSTANT, yytext()); }
+  {FloatConstant}                        { 
+                                            String floatStr = yytext();
+                                            try {
+                                              float value = Float.parseFloat(floatStr);
+                                              if (value > Float.MAX_VALUE) {
+                                                throw new InvalidFloatException("Float out of range: " + floatStr);
+                                              }
+                                            } catch (NumberFormatException e) {
+                                              throw new InvalidFloatException("Invalid float format: " + floatStr);
+                                            }
+                                            return symbol(ParserSym.FLOAT_CONSTANT, floatStr);
+                                         }
   {IntegerConstant}                      { 
                                             String intStr = yytext();
                                             try {
@@ -107,13 +138,15 @@ Comment = "#+"[^]*"+#"
                                             }
                                             return symbol(ParserSym.INTEGER_CONSTANT, intStr);
                                          }
+
   {StringConstant}                       { 
                                             String str = yytext();
-                                            if (str.length() > MAX_LENGTH + 2) { // +2 for quotes use
+                                            if (str.length() > MAX_STRING_LENGTH + 2) { // +2 for quotes use
                                               throw new InvalidLengthException("String exceeds maximum length: " + str);
                                             }
                                             return symbol(ParserSym.STRING_CONSTANT, str);
                                          }
+
   {TextContent}                          { 
                                             String content = yytext();
                                             if (content.length() > MAX_LENGTH) {
@@ -145,13 +178,24 @@ Comment = "#+"[^]*"+#"
   {MenorIgual}                              { return symbol(ParserSym.MENOR_IGUAL); }
   {ComillaAbre}                             { return symbol(ParserSym.COMILLA_ABRE); }
   {ComillaCierra}                           { return symbol(ParserSym.COMILLA_CIERRA); }
-  
+
   /* whitespace */
   {WhiteSpace}                              { /* ignore */ }
 
-  /* comments */
-  {Comment}                                 { /* ignore */ }
-  "/*"[^]*"*/"                              { /* ignore */ }
+  /* comments with character validation */
+  {Comment}                                 { 
+                                              String comment = yytext();
+                                              String content = comment.substring(2, comment.length() - 2);
+                                              validateComment(content);
+                                              /* ignore */ 
+                                            }
+
+  {BlockComment}                            { 
+                                              String comment = yytext();
+                                              String content = comment.substring(2, comment.length() - 2);
+                                              validateComment(content);
+                                              /* ignore */
+                                            }
 
   /* Negative numbers - only at start of line or after whitespace */
   ^[ \t]*{NegativeIntegerConstant}       { 
@@ -166,6 +210,7 @@ Comment = "#+"[^]*"+#"
                                             }
                                             return symbol(ParserSym.NEGATIVE_INTEGER_CONSTANT, intStr);
                                          }
+
   ^[ \t]*{NegativeFloatConstant}         { 
                                             String floatStr = yytext().trim();
                                             try {
@@ -181,4 +226,4 @@ Comment = "#+"[^]*"+#"
 }
 
 /* error fallback */
-[^]                              { throw new UnknownCharacterException(yytext()); }
+[^]                                      { throw new UnknownCharacterException(yytext()); }

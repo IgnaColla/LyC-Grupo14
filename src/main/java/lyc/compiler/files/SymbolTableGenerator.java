@@ -5,26 +5,41 @@ import java.io.IOException;
 
 public class SymbolTableGenerator implements FileGenerator {
 
+    private String centerText(String text, int width) {
+        int padding = (width - text.length()) / 2;
+        return " ".repeat(Math.max(0, padding)) + text;
+    }
+
     @Override
     public void generate(FileWriter fileWriter) throws IOException {
         SymbolTable symbolTable = SymbolTable.getInstance();
+        // Header
+        fileWriter.write("\n" + "=".repeat(110) + "\n");
+        fileWriter.write(centerText("SYMBOLS TABLE", 110) + "\n");
+        fileWriter.write("=".repeat(110) + "\n");
 
-        fileWriter.write("SYMBOLS TABLE\n");
-        fileWriter.write("=================\n\n");
-        fileWriter.write(String.format("%-20s %-15s %-20s %-15s \n",
-                "NAME", "TYPE", "VALUE", "LENGTH"));
-        fileWriter.write("----------------------------------------------------------------\n");
+        // Column headers
+        String format = "| %-35s | %-13s | %-35s | %-8s |\n";
+        fileWriter.write(String.format(format, "NAME", "TYPE", "VALUE", "LENGTH"));
+        fileWriter.write("-".repeat(110) + "\n");
 
+        // Symbol entries
         for (Object sym : symbolTable.getSymbols()) {
             SymbolTable.Symbol s = (SymbolTable.Symbol) sym;
-            fileWriter.write(String.format("%-20s %-15s %-20s %-15s\n",
-                    s.getName(),
-                    s.getType(),
-                    s.getValue() != null ? s.getValue() : "-",
-                    s.getValue() != null ? s.getValue().length() : "0"));
+            String name = s.getName();
+            String type = s.getType() != null ? s.getType() : "-";
+            String value = s.getValue() != null ? s.getValue() : "-";
+            String length = s.getLength() != null ? 
+                           String.valueOf(s.getLength()) : "-";
+            
+            fileWriter.write(String.format(format, name, type, value, length));
         }
 
-        fileWriter.write("\nTotal symbols: " + symbolTable.getSymbolCount() + "\n");
+        // Footer
+        fileWriter.write("=".repeat(110) + "\n");
+        fileWriter.write("Total symbols: " + symbolTable.getSymbolCount() + "\n");
+        fileWriter.write("=".repeat(110) + "\n\n");
+
         fileWriter.flush();
     }
 }
