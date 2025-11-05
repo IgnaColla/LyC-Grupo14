@@ -1,5 +1,6 @@
 package lyc.compiler.files;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
@@ -68,37 +69,44 @@ public class SymbolTable {
     public void generateSymbolTableFile() {
         System.out.println("Generating symbols table... Total symbols: " + symbols.size());
 
-        try (FileWriter writer = new FileWriter("./symbols-table.txt")) {
-            // Header
-            writer.write("\n" + "=".repeat(110) + "\n");
-            writer.write(centerText("SYMBOLS TABLE", 110) + "\n");
-            writer.write("=".repeat(110) + "\n");
-
-            // Column headers
-            String format = "| %-35s | %-13s | %-35s | %-8s |\n";
-            writer.write(String.format(format, "NAME", "TYPE", "VALUE", "LENGTH"));
-            writer.write("-".repeat(110) + "\n");
-
-            // Symbol entries
-            for (Symbol symbol : symbols.values()) {
-                String name = symbol.getName();
-                String type = symbol.getType() != null ? symbol.getType() : "-";
-                String value = symbol.getValue() != null ? symbol.getValue() : "-";
-                String length = symbol.getLength() != null ? 
-                               String.valueOf(symbol.getLength()) : "-";
-                
-                writer.write(String.format(format, name, type, value, length));
+        try {
+            File outputFile = new File("target/output/symbols-table.txt");
+            File parentDir = outputFile.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
             }
 
-            // Footer
-            writer.write("=".repeat(110) + "\n");
-            writer.write("Total symbols: " + symbols.size() + "\n");
-            writer.write("=".repeat(110) + "\n\n");
+            try (FileWriter writer = new FileWriter(outputFile)) {
+                // Header
+                writer.write("\n" + "=".repeat(110) + "\n");
+                writer.write(centerText("SYMBOLS TABLE", 110) + "\n");
+                writer.write("=".repeat(110) + "\n");
 
+                // Column headers
+                String format = "| %-35s | %-13s | %-35s | %-8s |\n";
+                writer.write(String.format(format, "NAME", "TYPE", "VALUE", "LENGTH"));
+                writer.write("-".repeat(110) + "\n");
+
+                // Symbol entries
+                for (Symbol symbol : symbols.values()) {
+                    String name = symbol.getName();
+                    String type = symbol.getType() != null ? symbol.getType() : "-";
+                    String value = symbol.getValue() != null ? symbol.getValue() : "-";
+                    String length = symbol.getLength() != null ? 
+                                   String.valueOf(symbol.getLength()) : "-";
+                    
+                    writer.write(String.format(format, name, type, value, length));
+                }
+
+                // Footer
+                writer.write("=".repeat(110) + "\n");
+                writer.write("Total symbols: " + symbols.size() + "\n");
+                writer.write("=".repeat(110) + "\n\n");
+            }
             System.out.println("Symbols table generated successfully.");
-
         } catch (IOException e) {
             System.err.println("Error generating symbols-table.txt: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
