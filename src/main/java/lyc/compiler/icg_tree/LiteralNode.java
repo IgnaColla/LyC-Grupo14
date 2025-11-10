@@ -16,9 +16,4 @@ public class LiteralNode extends TNode {
     public String toCode() {
         return value;
     }
-
-    @Override
-    protected void printTree(String prefix, boolean isTail) {
-        System.out.println(prefix + (isTail ? "└── " : "├── ") + "LITERAL: " + value);
-    }
 }

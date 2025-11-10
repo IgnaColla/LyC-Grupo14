@@ -34,13 +34,4 @@ public class ProgramNode extends TNode {
         }
         return code.toString();
     }
-
-    @Override
-    protected void printTree(String prefix, boolean isTail) {
-        System.out.println(prefix + "PROGRAM");
-        for (int i = 0; i < statements.size(); i++) {
-            boolean isLast = (i == statements.size() - 1);
-            statements.get(i).printTree(prefix + "│   ", isLast);
-        }
-    }
 }

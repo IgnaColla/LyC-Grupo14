@@ -28,11 +28,4 @@ public class ExpressionNode extends TNode {
     public String toCode() {
         return "(" + operator + " " + left.toCode() + " " + right.toCode() + ")";
     }
-
-    @Override
-    protected void printTree(String prefix, boolean isTail) {
-        System.out.println(prefix + (isTail ? "└── " : "├── ") + "OP: " + operator);
-        left.printTree(prefix + (isTail ? "    " : "│   "), false);
-        right.printTree(prefix + (isTail ? "    " : "│   "), true);
-    }
 }

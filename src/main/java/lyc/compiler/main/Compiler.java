@@ -3,13 +3,17 @@ package lyc.compiler.main;
 import lyc.compiler.Parser;
 import lyc.compiler.factories.FileFactory;
 import lyc.compiler.factories.ParserFactory;
+import lyc.compiler.files.AsmCodeGenerator;
 import lyc.compiler.files.FileOutputWriter;
 import lyc.compiler.files.GraphvizGenerator;
 import lyc.compiler.files.SymbolTableGenerator;
+import lyc.compiler.utils.ASTHolder;
 import lyc.compiler.utils.CodeGenerator;
 import lyc.compiler.utils.SemanticChecker;
 import lyc.compiler.files.IntermediateCodeGenerator;
+import lyc.compiler.files.RunBatGenerator;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 
@@ -36,14 +40,26 @@ public final class Compiler {
                 System.exit(1);
             }
 
+            FileOutputWriter.writeOutput("symbols-table.txt", new SymbolTableGenerator());
             FileOutputWriter.writeOutput("intermediate-code.txt", new IntermediateCodeGenerator());
             FileOutputWriter.writeOutput("ast-tree.dot", new GraphvizGenerator());
-            FileOutputWriter.writeOutput("final.asm", new SymbolTableGenerator());
 
-            System.out.println("\n[OK] Successful compilation");
-            System.out.println("Generated files:");
-            System.out.println("  - symbol-table.txt");
-            System.out.println("  - intermediate-code.txt");
+            try {
+                AsmCodeGenerator asmGen = new AsmCodeGenerator();
+                FileWriter asmWriter = new FileWriter("target/output/final.asm");
+                asmGen.generateFromAST(ASTHolder.getAST());
+                asmWriter.close();
+
+                RunBatGenerator.generateRunBat();
+                System.out.println("\n[OK] Successful compilation");
+                System.out.println("Generated files:");
+                System.out.println("  - symbol-table.txt");
+                System.out.println("  - intermediate-code.txt");
+                System.out.println("  - final.asm");
+                System.out.println("  - run_g14.bat");
+            } catch (IOException e) {
+                System.err.println("Error generating files: " + e.getMessage());
+            }
 
         } catch (IOException e) {
             System.err.println("Error while reading file: " + e.getMessage());

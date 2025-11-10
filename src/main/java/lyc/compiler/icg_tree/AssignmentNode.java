@@ -22,10 +22,4 @@ public class AssignmentNode extends TNode {
     public String toCode() {
         return "(= " + variable + " " + expression.toCode() + ")";
     }
-
-    @Override
-    protected void printTree(String prefix, boolean isTail) {
-        System.out.println(prefix + (isTail ? "└── " : "├── ") + "ASSIGN: " + variable);
-        expression.printTree(prefix + (isTail ? "    " : "│   "), true);
-    }
 }

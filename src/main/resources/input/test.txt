@@ -2,14 +2,14 @@ init {
     a1, b1 : Float
     variable1 : Int
     p1, p2, p3 : String
-    a, b, c, r, f, z, x : Float
+    a, b, c, d, e, r, f, z, x, t1, t2 : Float
     areaMax : Float
     dateC : String
     base : Float
     var1 : Float
 }
 
-a = 1
+a = 2
 b = 1
 c = 2
 
@@ -23,15 +23,17 @@ x = r + 500
 x = 34 * 3
 x = z / f
  
-a = 99999.99
-a = 99.
-a = .9999
+d = 99999.99
+d = 99.
+d = .9999
 
-b = "@sdADaSjfla%dfg"
-b = "asldk  fh sjf"
+e = "@sdADaSjfla%dfg"
+e = "asldk  fh sjf"
  
 #+ Esto es un comentario +#
- 
+
+a = 1
+b = 2
 if (a > b)
 {
     write("a es mas grande que b")
@@ -62,19 +64,19 @@ if (a > b OR c > b)
 read(base) #+ base es una variable +#
 
 a = 1
-b = 3
+b = 4
  
-while (a > b)
+while (a < b)
 {
-    write("a es mas grande que b")
+    write("a es mas chico que b")
     a = a + 1
 }
  
-write("ewr")  #+ "ewr" es una cte string +#
+write("TEST")  #+ "ewr" es una cte string +#
 write(var1)  #+ var1 es una variable numérica definida previamente +#
 
-z = 2
-x = 3.8
-areaMax = triangleAreaMaximum( [0,x; 4.0,12; 2.5,3] ; [x,0; 6,0; z,2] )
+t1 = 2
+t2 = 3.8
+areaMax = triangleAreaMaximum( [0,t2; 4.0,12; 2.5,3] ; [t2,0; 6,0; t1,2] )
 
-dateC = convDate(21-08-2025)
+dateC = convDate(11-05-1449)

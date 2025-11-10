@@ -39,13 +39,4 @@ public class ConditionNode extends TNode {
         // Binary operator
         return "(" + operator + " " + left.toCode() + " " + right.toCode() + ")";
     }
-
-    @Override
-    protected void printTree(String prefix, boolean isTail) {
-        System.out.println(prefix + (isTail ? "└── " : "├── ") + "CONDITION: " + operator);
-        left.printTree(prefix + (isTail ? "    " : "│   "), right == null);
-        if (right != null) {
-            right.printTree(prefix + (isTail ? "    " : "│   "), true);
-        }
-    }
 }

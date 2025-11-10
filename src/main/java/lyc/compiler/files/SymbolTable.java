@@ -103,7 +103,7 @@ public class SymbolTable {
                 writer.write("Total symbols: " + symbols.size() + "\n");
                 writer.write("=".repeat(110) + "\n\n");
             }
-            System.out.println("Symbols table generated successfully.");
+            // System.out.println("Symbols table generated successfully.");
         } catch (IOException e) {
             System.err.println("Error generating symbols-table.txt: " + e.getMessage());
             e.printStackTrace();

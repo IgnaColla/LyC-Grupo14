@@ -7,6 +7,7 @@ import lyc.compiler.files.SymbolTable;
 import lyc.compiler.utils.CodeGenerator;
 import lyc.compiler.utils.SemanticChecker;
 import lyc.compiler.utils.ASTHolder;
+import lyc.compiler.files.AsmCodeGenerator;
 import lyc.compiler.icg_tree.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,7 @@ terminal COMILLA_ABRE;
 terminal COMILLA_CIERRA;
 
 // Non Terminals
+non terminal start_program;
 non terminal TNode assignment;
 non terminal List<TNode> block;
 non terminal String comparison;
@@ -93,7 +95,13 @@ non terminal TNode unmatched_sentence;
 non terminal List variable_list;
 
 // Start Symbol Definition
-start with program;
+start with start_program;
+
+start_program ::= program:prog {: 
+                    AsmCodeGenerator asmGen = new AsmCodeGenerator();
+                    asmGen.generateFromAST(prog);
+                    RESULT = prog;
+                :};
 
 program ::= init_block sentence_list:stmts {: 
                 System.out.println("Program with init completed");
@@ -403,11 +411,20 @@ sentence_write ::= WRITE PARENTESIS_ABRE parameter:param PARENTESIS_CIERRA {:
                         RESULT = new WriteNode(param);
                     :};
 
-parameter_date ::= INTEGER_CONSTANT:day SUB INTEGER_CONSTANT:month SUB INTEGER_CONSTANT:year 
-                 {: 
-                    System.out.println("Date parameter: " + day + "-" + month + "-" + year);
-                    RESULT = new ConvDateNode(day.toString(), month.toString(), year.toString());
-                 :}; 
+parameter_date ::= INTEGER_CONSTANT:day SUB INTEGER_CONSTANT:month SUB INTEGER_CONSTANT:year {:
+                        System.out.println("Date parameter: " + day + "-" + month + "-" + year);
+                        try {
+                            int dayInt = Integer.parseInt(day.toString());
+                            int monthInt = Integer.parseInt(month.toString());
+                            int yearInt = Integer.parseInt(year.toString());
+                            int converted = yearInt * 10000 + monthInt * 100 + dayInt;
+                            System.out.println("Converted to YYYYMMDD: " + converted);
+                            RESULT = new ConvDateNode(day.toString(), month.toString(), year.toString(), converted);
+                        } catch (NumberFormatException e) {
+                            System.err.println("Error converting date parameters");
+                            RESULT = new ConvDateNode(day.toString(), month.toString(), year.toString(), 0);
+                        }
+                    :};
 
 function ::= sentence_conv_date:func {: 
                     System.out.println("Function convDate assignment: ");
