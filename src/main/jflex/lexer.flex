@@ -97,6 +97,8 @@ BlockComment = "/*"([^*]|"*"+[^/])*"*/"
 "AND"                                    { return symbol(ParserSym.AND); }
 "OR"                                     { return symbol(ParserSym.OR); }
 "NOT"                                    { return symbol(ParserSym.NOT); }
+"MOD"                                    { return symbol(ParserSym.MOD); }
+"DIV"                                    { return symbol(ParserSym.DIV_INT); }
 "Float"                                  { return symbol(ParserSym.FLOAT_TYPE); }
 "Int"                                    { return symbol(ParserSym.INT_TYPE); }
 "String"                                 { return symbol(ParserSym.STRING_TYPE); }

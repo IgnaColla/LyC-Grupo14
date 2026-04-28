@@ -1,11 +1,10 @@
 init {
     a1, b1 : Float
-    variable1 : Int
+    variable1, div1, mod1, base : Int
     p1, p2, p3 : String
     a, b, c, d, e, r, f, z, x, t1, t2 : Float
     areaMax : Float
     dateC : String
-    base : Float
     var1 : Float
 }
 
@@ -22,14 +21,14 @@ x = 27 - c
 x = r + 500
 x = 34 * 3
 x = z / f
- 
+
 d = 99999.99
 d = 99.
 d = .9999
 
 e = "@sdADaSjfla%dfg"
 e = "asldk  fh sjf"
- 
+
 #+ Esto es un comentario +#
 
 a = 1
@@ -52,31 +51,25 @@ if (NOT a > b)
     write("a no es mas grande que b")
 }
 
-a = 1
-b = 1
-c = 2
-
-if (a > b OR c > b)
-{
-    write("a > b o c > b")
-}
-
 read(base) #+ base es una variable +#
+write(base)
 
-a = 1
-b = 4
- 
-while (a < b)
-{
-    write("a es mas chico que b")
-    a = a + 1
-}
- 
-write("TEST")  #+ "ewr" es una cte string +#
-write(var1)  #+ var1 es una variable numérica definida previamente +#
+write("ewr")  #+ "ewr" es una cte string +#
+
+var1 = 843
+write(var1)    #+ var1 es una variable numerica definida previamente +#
 
 t1 = 2
 t2 = 3.8
 areaMax = triangleAreaMaximum( [0,t2; 4.0,12; 2.5,3] ; [t2,0; 6,0; t1,2] )
 
 dateC = convDate(11-05-1449)
+
+mod1 = 7
+if (mod1 MOD 2 == 0)
+{
+    write("Par")
+}
+
+div1 = (10 DIV 0) + (10 MOD 3)
+write(div1)

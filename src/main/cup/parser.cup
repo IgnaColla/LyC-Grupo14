@@ -9,6 +9,7 @@ import lyc.compiler.utils.SemanticChecker;
 import lyc.compiler.utils.ASTHolder;
 import lyc.compiler.files.AsmCodeGenerator;
 import lyc.compiler.icg_tree.*;
+import lyc.compiler.model.DivisionByZeroException;
 import java.util.ArrayList;
 import java.util.List;
 %}
@@ -24,6 +25,7 @@ terminal CORCHETE_ABRE;
 terminal CORCHETE_CIERRA;
 terminal DISTINTO;
 terminal DIV;
+terminal DIV_INT;
 terminal DOSPUNTOS;
 terminal ELSE;
 terminal FLOAT_CONSTANT;
@@ -42,6 +44,7 @@ terminal MAYOR;
 terminal MAYOR_IGUAL;
 terminal MENOR;
 terminal MENOR_IGUAL;
+terminal MOD;
 terminal MULT;
 terminal NOT;
 terminal OR;
@@ -341,6 +344,20 @@ term ::= term:term1 MULT factor:fact1 {:
        | term:term1 DIV factor:fact1 {: 
                     System.out.println("/");
                     RESULT = new ExpressionNode("/", term1, fact1);
+                :}
+       | term:term1 MOD factor:fact1 {:
+                    System.out.println("MOD");
+                    if (fact1 instanceof LiteralNode && ((LiteralNode) fact1).getValue().equals("0")) {
+                        throw new DivisionByZeroException("Error: MOD por cero detectado en compilacion");
+                    }
+                    RESULT = new ExpressionNode("MOD", term1, fact1);
+                :}
+       | term:term1 DIV_INT factor:fact1 {:
+                    System.out.println("DIV");
+                    if (fact1 instanceof LiteralNode && ((LiteralNode) fact1).getValue().equals("0")) {
+                        throw new DivisionByZeroException("Error: DIV por cero detectado en compilacion");
+                    }
+                    RESULT = new ExpressionNode("DIV", term1, fact1);
                 :}
        | factor:fact1 {: 
                     System.out.println("Term = factor");

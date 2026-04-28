@@ -53,7 +53,7 @@ public final class Compiler {
                 RunBatGenerator.generateRunBat();
                 System.out.println("\n[OK] Successful compilation");
                 System.out.println("Generated files:");
-                System.out.println("  - symbol-table.txt");
+                System.out.println("  - symbols-table.txt");
                 System.out.println("  - intermediate-code.txt");
                 System.out.println("  - final.asm");
                 System.out.println("  - run_g14.bat");

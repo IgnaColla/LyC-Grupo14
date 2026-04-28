@@ -272,7 +272,7 @@ public class AsmCodeGenerator {
 
         if (expr instanceof LiteralNode) {
             String val = ((LiteralNode) expr).getValue();
-            if (val.contains(".")) { // Float value
+            if (val.contains(".")) {
                 try {
                     float floatVal = Float.parseFloat(val);
                     int bits = Float.floatToIntBits(floatVal);
@@ -282,15 +282,27 @@ public class AsmCodeGenerator {
                     asmCode.append(" mov eax, 0\n");
                     asmCode.append(" mov dword ptr [_").append(var).append("], eax\n");
                 }
-            } else if (!isString(val)) { // Int
-                try {
-                    float floatVal = Float.parseFloat(val);
-                    int bits = Float.floatToIntBits(floatVal);
-                    asmCode.append(" mov eax, ").append(bits).append("\n");
-                    asmCode.append(" mov dword ptr [_").append(var).append("], eax\n");
-                } catch (NumberFormatException e) {
-                    asmCode.append(" mov eax, 0\n");
-                    asmCode.append(" mov dword ptr [_").append(var).append("], eax\n");
+            } else if (!isString(val)) {
+                String varType = variables.get(var);
+                if ("Int".equals(varType)) {
+                    try {
+                        int intVal = (int) Double.parseDouble(val);
+                        asmCode.append(" mov eax, ").append(intVal).append("\n");
+                        asmCode.append(" mov dword ptr [_").append(var).append("], eax\n");
+                    } catch (NumberFormatException e) {
+                        asmCode.append(" mov eax, 0\n");
+                        asmCode.append(" mov dword ptr [_").append(var).append("], eax\n");
+                    }
+                } else {
+                    try {
+                        float floatVal = Float.parseFloat(val);
+                        int bits = Float.floatToIntBits(floatVal);
+                        asmCode.append(" mov eax, ").append(bits).append("\n");
+                        asmCode.append(" mov dword ptr [_").append(var).append("], eax\n");
+                    } catch (NumberFormatException e) {
+                        asmCode.append(" mov eax, 0\n");
+                        asmCode.append(" mov dword ptr [_").append(var).append("], eax\n");
+                    }
                 }
             }
         } else if (expr instanceof ExpressionNode) {
@@ -464,6 +476,19 @@ public class AsmCodeGenerator {
             asmCode.append(" mov dx, OFFSET ").append(msgLabel).append("\n");
             asmCode.append(" mov ah, 09h\n");
             asmCode.append(" int 21h\n");
+        } else {
+            String varType = variables.get(param);
+            if ("Int".equals(varType)) {
+                asmCode.append(" mov eax, [_").append(param).append("]\n");
+                asmCode.append(" lea edi, [_result_area_str]\n");
+                asmCode.append(" call int_to_string\n");
+                asmCode.append(" mov dx, OFFSET _result_area_str\n");
+                asmCode.append(" mov ah, 09h\n");
+                asmCode.append(" int 21h\n");
+            } else {
+                asmCode.append(" fld dword ptr [_").append(param).append("]\n");
+                asmCode.append(" call print_float\n");
+            }
         }
 
         asmCode.append(" mov dx, OFFSET _NEWLINE\n");
@@ -473,7 +498,35 @@ public class AsmCodeGenerator {
     }
 
     private void generateRead(ReadNode read, int nextEtLabel) {
+        String var = read.getParameter();
+        int readLoop = labelCounter++;
+        int readEnd = labelCounter++;
+
         asmCode.append(" mov dx, OFFSET T_insert_base\n");
+        asmCode.append(" mov ah, 09h\n");
+        asmCode.append(" int 21h\n");
+
+        asmCode.append(" mov ah, 0Ch\n");
+        asmCode.append(" mov al, 00h\n");
+        asmCode.append(" int 21h\n");
+
+        asmCode.append(" xor ecx, ecx\n");
+
+        asmCode.append("READ_LOOP_").append(readLoop).append(":\n");
+        asmCode.append(" mov ah, 01h\n");
+        asmCode.append(" int 21h\n");
+        asmCode.append(" cmp al, 0Dh\n");
+        asmCode.append(" JE READ_END_").append(readEnd).append("\n");
+        asmCode.append(" sub al, 30h\n");
+        asmCode.append(" movzx eax, al\n");
+        asmCode.append(" imul ecx, ecx, 10\n");
+        asmCode.append(" add ecx, eax\n");
+        asmCode.append(" JMP READ_LOOP_").append(readLoop).append("\n");
+
+        asmCode.append("READ_END_").append(readEnd).append(":\n");
+        asmCode.append(" mov dword ptr [_").append(var).append("], ecx\n");
+
+        asmCode.append(" mov dx, OFFSET _NEWLINE\n");
         asmCode.append(" mov ah, 09h\n");
         asmCode.append(" int 21h\n");
         asmCode.append(" JMP ET_").append(nextEtLabel).append("\n\n");
@@ -558,6 +611,20 @@ public class AsmCodeGenerator {
             asmCode.append(" mov dx, OFFSET ").append(msgLabel).append("\n");
             asmCode.append(" mov ah, 09h\n");
             asmCode.append(" int 21h\n");
+        } else {
+            String varType = variables.get(param);
+            if ("Int".equals(varType)) {
+                asmCode.append(" mov eax, [_").append(param).append("]\n");
+                asmCode.append(" lea edi, [_result_area_str]\n");
+                asmCode.append(" call int_to_string\n");
+                asmCode.append(" mov dx, OFFSET _result_area_str\n");
+                asmCode.append(" mov ah, 09h\n");
+                asmCode.append(" int 21h\n");
+            } else {
+                // Float
+                asmCode.append(" fld dword ptr [_").append(param).append("]\n");
+                asmCode.append(" call print_float\n");
+            }
         }
 
         asmCode.append(" mov dx, OFFSET _NEWLINE\n");
@@ -571,25 +638,34 @@ public class AsmCodeGenerator {
             TNode left = cn.getLeft();
             TNode right = cn.getRight();
 
-            if (left instanceof LiteralNode && right instanceof LiteralNode) {
-                String leftVal = cleanValue(((LiteralNode) left).getValue());
-                String rightVal = cleanValue(((LiteralNode) right).getValue());
-
-                if (isVariable(leftVal)) {
-                    asmCode.append(" mov eax, [_").append(leftVal).append("]\n");
+            if (left instanceof ExpressionNode) {
+                generateExprNode(left);
+            } else if (left instanceof LiteralNode) {
+                String val = cleanValue(((LiteralNode) left).getValue());
+                if (isVariable(val)) {
+                    asmCode.append(" mov eax, [_").append(val).append("]\n");
                 } else {
-                    asmCode.append(" mov eax, ").append(leftVal).append("\n");
+                    asmCode.append(" mov eax, ").append(val).append("\n");
                 }
-
-                if (isVariable(rightVal)) {
-                    asmCode.append(" mov ebx, [_").append(rightVal).append("]\n");
-                } else {
-                    asmCode.append(" mov ebx, ").append(rightVal).append("\n");
-                }
-
-                asmCode.append(" cmp eax, ebx\n");
-                asmCode.append(" J").append(getJumpOpposite(cn.getOperator())).append(" ET_IF_").append(label).append("\n");
             }
+
+            if (right instanceof ExpressionNode) {
+                asmCode.append(" push eax\n");
+                generateExprNode(right);
+                asmCode.append(" mov ebx, eax\n");
+                asmCode.append(" pop eax\n");
+            } else if (right instanceof LiteralNode) {
+                String val = cleanValue(((LiteralNode) right).getValue());
+                if (isVariable(val)) {
+                    asmCode.append(" mov ebx, [_").append(val).append("]\n");
+                } else {
+                    asmCode.append(" mov ebx, ").append(val).append("\n");
+                }
+            }
+
+            asmCode.append(" cmp eax, ebx\n");
+            asmCode.append(" J").append(getJumpOpposite(cn.getOperator()))
+                .append(" ET_IF_").append(label).append("\n");
         }
     }
 
@@ -603,40 +679,72 @@ public class AsmCodeGenerator {
     }
 
     private void generateExpression(ExpressionNode expr) {
-        String op = expr.getOperator();
-        TNode left = expr.getLeft();
-        TNode right = expr.getRight();
+        generateExprNode(expr);
+    }
 
-        if (left instanceof LiteralNode) {
-            String val = cleanValue(((LiteralNode) left).getValue());
+    private void generateExprNode(TNode node) {
+        if (node instanceof LiteralNode) {
+            String val = cleanValue(((LiteralNode) node).getValue());
             if (isVariable(val)) {
                 asmCode.append(" mov eax, [_").append(val).append("]\n");
             } else {
                 asmCode.append(" mov eax, ").append(val).append("\n");
             }
+            return;
         }
 
-        if (right instanceof LiteralNode) {
-            String val = cleanValue(((LiteralNode) right).getValue());
-            if (isVariable(val)) {
-                asmCode.append(" mov ebx, [_").append(val).append("]\n");
-            } else {
-                asmCode.append(" mov ebx, ").append(val).append("\n");
+        if (node instanceof ExpressionNode) {
+            ExpressionNode expr = (ExpressionNode) node;
+            String op = expr.getOperator();
+            TNode left = expr.getLeft();
+            TNode right = expr.getRight();
+
+            generateExprNode(right);
+            asmCode.append(" push eax\n");
+
+            generateExprNode(left);
+
+            asmCode.append(" pop ebx\n");
+
+            switch (op) {
+                case "+":
+                    asmCode.append(" add eax, ebx\n");
+                    break;
+                case "-":
+                    asmCode.append(" sub eax, ebx\n");
+                    break;
+                case "*":
+                    asmCode.append(" imul eax, ebx\n");
+                    break;
+                case "/": {
+                    int lbl = labelCounter++;
+                    asmCode.append(" cmp ebx, 0\n");
+                    asmCode.append(" JE SKIP_DIV_").append(lbl).append("\n");
+                    asmCode.append(" cdq\n");
+                    asmCode.append(" idiv ebx\n");
+                    asmCode.append("SKIP_DIV_").append(lbl).append(":\n");
+                    break;
+                }
+                case "MOD": {
+                    int lbl = labelCounter++;
+                    asmCode.append(" cmp ebx, 0\n");
+                    asmCode.append(" JE SKIP_MOD_").append(lbl).append("\n");
+                    asmCode.append(" cdq\n");
+                    asmCode.append(" idiv ebx\n");
+                    asmCode.append(" mov eax, edx\n"); // resto → EAX
+                    asmCode.append("SKIP_MOD_").append(lbl).append(":\n");
+                    break;
+                }
+                case "DIV": {
+                    int lbl = labelCounter++;
+                    asmCode.append(" cmp ebx, 0\n");
+                    asmCode.append(" JE SKIP_DIVINT_").append(lbl).append("\n");
+                    asmCode.append(" cdq\n");
+                    asmCode.append(" idiv ebx\n");
+                    asmCode.append("SKIP_DIVINT_").append(lbl).append(":\n");
+                    break;
+                }
             }
-        }
-
-        switch (op) {
-            case "+": asmCode.append(" add eax, ebx\n"); break;
-            case "-": asmCode.append(" sub eax, ebx\n"); break;
-            case "*": asmCode.append(" imul eax, ebx\n"); break;
-            case "/":
-                int skipDiv = labelCounter++;
-                asmCode.append(" cmp ebx, 0\n");
-                asmCode.append(" JE SKIP_DIV_").append(skipDiv).append("\n");
-                asmCode.append(" cdq\n");
-                asmCode.append(" idiv ebx\n");
-                asmCode.append("SKIP_DIV_").append(skipDiv).append(":\n");
-                break;
         }
     }
 
