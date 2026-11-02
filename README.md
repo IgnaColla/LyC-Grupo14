@@ -11,3 +11,6 @@
 - Temas Especiales
     - convDate
     - triangleAreaMaximum
+
+- Tema especial agregado para 2C2026
+    - TE4: Aggregate

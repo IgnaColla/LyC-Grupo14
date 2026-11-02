@@ -6,6 +6,8 @@ init {
     areaMax : Float
     dateC : String
     var1 : Float
+    ta, tb, tc, td ttotal, tmin, tmax, tcant, tcomb, tnest, ti, tj, tl : Int
+    tmedia, tmixto, tmedia, tmedia2 : Float
 }
 
 a = 2
@@ -71,5 +73,37 @@ if (mod1 MOD 2 == 0)
     write("Par")
 }
 
-div1 = (10 DIV 0) + (10 MOD 3)
+#+ div1 = (10 DIV 0) + (10 MOD 3) +#
 write(div1)
+
+ta = 2
+tb = 3
+tc = 7
+td = 5
+
+ttotal = agg(SUM, [ta, tb * 2, 4])             #+ 12 +#
+tmin   = agg(MIN, [ta, tb * 2, 4])             #+ 2 +#
+tmax   = agg(MAX, [ta, tb * 2, 4])             #+ 6 +#
+tmedia = agg(AVG, [ta, tb * 2, 4])             #+ 4.00 +#
+tcant  = agg(COUNT, [ta, tb * 2, 4])           #+ 3 +#
+tmixto = agg(SUM, [1, 2.5, 3])                 #+ 6.50, mezcla int/float +#
+tmin   = agg(MAX, [ta])                        #+ un solo elemento +#
+tmedia  = agg(AVG, [1, 2, 4])                  #+ 2.33, con decimales +#
+tmedia2 = agg(AVG, [2, 4, 6])                  #+ 4.00, división exacta, igual float +#
+tcomb  = agg(SUM, [ta, tb]) * 2 + 1            #+ 11, dentro de expresión mayor +#
+tnest  = agg(SUM, [agg(MAX, [ta, tb]), agg(MIN, [tc, td]), 10])   #+ 18 +#
+if (agg(COUNT, [ta, tb, tc]) > 2) { write("COUNT > 2") }
+ti = 0
+tj = 1
+tl = 10
+while (agg(SUM, [ti, tj]) < tl) { ti = ti + 1 }
+write(ti)                                      #+ 9 +#
+write(agg(SUM, [ta, tb]))
+
+#+ ERRORES (descomentar de a uno)
+   ttotal = agg(FOO, [ta])          selector inexistente
+   ttotal = agg(SUM, [])            lista vacía
+   ttotal = agg(SUM, [ta, zzz])     variable no declarada
+   ttotal = agg(SUM, [ta, "hola"])  elemento string
+   ttotal = agg(AVG, [ta, tb])      AVG asignado a Int
++#

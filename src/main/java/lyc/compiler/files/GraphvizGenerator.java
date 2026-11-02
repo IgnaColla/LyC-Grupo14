@@ -2,9 +2,23 @@ package lyc.compiler.files;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import lyc.compiler.icg_tree.*;
-import lyc.compiler.utils.ASTHolder;
 import java.util.List;
+
+import lyc.compiler.icg_tree.AggregateNode;
+import lyc.compiler.icg_tree.AssignmentNode;
+import lyc.compiler.icg_tree.ConditionNode;
+import lyc.compiler.icg_tree.ConvDateNode;
+import lyc.compiler.icg_tree.ExpressionNode;
+import lyc.compiler.icg_tree.IfNode;
+import lyc.compiler.icg_tree.LiteralNode;
+import lyc.compiler.icg_tree.ProgramNode;
+import lyc.compiler.icg_tree.ReadNode;
+import lyc.compiler.icg_tree.TNode;
+import lyc.compiler.icg_tree.TriangleAreaNode;
+import lyc.compiler.icg_tree.WhileNode;
+import lyc.compiler.icg_tree.WriteExprNode;
+import lyc.compiler.icg_tree.WriteNode;
+import lyc.compiler.utils.ASTHolder;
 
 public class GraphvizGenerator implements FileGenerator {
 
@@ -146,7 +160,10 @@ public class GraphvizGenerator implements FileGenerator {
                 dotContent.append(String.format(" %s -> %s;\n", nodeName, c));
             }
         } else if (node instanceof WriteExprNode) {
-            /* label WRITE + generateNode(expression) */ }
+            dotContent.append(String.format(" %s [label=\"WRITE\"];\n", nodeName));
+            String c = generateNode(((WriteExprNode) node).getExpression(), currentId);
+            dotContent.append(String.format(" %s -> %s;\n", nodeName, c));
+        }
 
         return nodeName;
     }

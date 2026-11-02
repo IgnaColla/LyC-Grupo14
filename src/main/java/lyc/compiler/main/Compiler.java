@@ -1,21 +1,22 @@
 package lyc.compiler.main;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+
 import lyc.compiler.Parser;
 import lyc.compiler.factories.FileFactory;
 import lyc.compiler.factories.ParserFactory;
 import lyc.compiler.files.AsmCodeGenerator;
 import lyc.compiler.files.FileOutputWriter;
 import lyc.compiler.files.GraphvizGenerator;
+import lyc.compiler.files.IntermediateCodeGenerator;
+import lyc.compiler.files.RunBatGenerator;
 import lyc.compiler.files.SymbolTableGenerator;
+import lyc.compiler.icg_tree.AggregateNode;
 import lyc.compiler.utils.ASTHolder;
 import lyc.compiler.utils.CodeGenerator;
 import lyc.compiler.utils.SemanticChecker;
-import lyc.compiler.files.IntermediateCodeGenerator;
-import lyc.compiler.files.RunBatGenerator;
-
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
 
 public final class Compiler {
 
@@ -31,6 +32,7 @@ public final class Compiler {
             CodeGenerator.clear();
             SemanticChecker.clear();
             lyc.compiler.utils.ASTHolder.clear();
+            AggregateNode.resetCounter();
 
             Parser parser = ParserFactory.create(reader);
             parser.parse();

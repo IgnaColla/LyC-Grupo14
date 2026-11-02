@@ -1,5 +1,9 @@
 package lyc.compiler.icg_tree;
 
+import java.util.ArrayList;
+import java.util.List;
+import lyc.compiler.utils.SemanticChecker;
+
 public class AggregateNode extends TNode {
 
     private static int counter = 0;

@@ -325,11 +325,13 @@ block ::= LLAVE_ABRE sentence_list:stmts LLAVE_CIERRA {:
 assignment ::= IDENTIFIER:id ASSIG expression:expr {: 
                         System.out.println("Assignment: " + id + " = (expr)");
                         SemanticChecker.checkExists(id.toString());
+                        SemanticChecker.checkAggregateAssignment(id.toString(), expr);
                         RESULT = new AssignmentNode(id.toString(), expr);
                     :}
              | IDENTIFIER:id ASSIG function:func {: 
                         System.out.println("Assignment function: " + id + " = (func)");
                         SemanticChecker.checkExists(id.toString());
+                        SemanticChecker.checkAggregateAssignment(id.toString(), func);
                         RESULT = new AssignmentNode(id.toString(), func);
                     :};
 
@@ -410,8 +412,10 @@ factor ::= IDENTIFIER:id  {:
          | SUB PARENTESIS_ABRE expression:expr PARENTESIS_CIERRA {: 
                         System.out.println("Negative expression: -(Expression)");
                         RESULT = new ExpressionNode("-", new LiteralNode("0"), expr);
-                    :};
-         | aggregate:agg {: RESULT = agg; :}
+                    :}
+         | aggregate:agg {:
+                RESULT = agg;
+            :};
 
 parameter ::= IDENTIFIER:id {: 
                     System.out.println("Parameter ID: " + id);
@@ -436,8 +440,10 @@ sentence_read ::= READ PARENTESIS_ABRE parameter:param PARENTESIS_CIERRA {:
 sentence_write ::= WRITE PARENTESIS_ABRE parameter:param PARENTESIS_CIERRA {: 
                         System.out.println("Function write");
                         RESULT = new WriteNode(param);
-                    :};
-            | WRITE PARENTESIS_ABRE aggregate:agg PARENTESIS_CIERRA {: RESULT = new WriteExprNode(agg); :}
+                    :}
+            | WRITE PARENTESIS_ABRE aggregate:agg PARENTESIS_CIERRA {: 
+                    RESULT = new WriteExprNode(agg);
+                :};
 
 parameter_date ::= INTEGER_CONSTANT:day SUB INTEGER_CONSTANT:month SUB INTEGER_CONSTANT:year {:
                         System.out.println("Date parameter: " + day + "-" + month + "-" + year);
@@ -515,6 +521,14 @@ agg_list ::= agg_list:l COMA expression:e {: l.add(e); RESULT = l; :}
 
 aggregate ::= AGG PARENTESIS_ABRE agg_selector:op COMA CORCHETE_ABRE agg_list:items
               CORCHETE_CIERRA PARENTESIS_CIERRA {:
-                  AggregateNode agg = new AggregateNode(op, items);
-                  RESULT = agg;
+                    AggregateNode agg = new AggregateNode(op, items);
+                    SymbolTable st = SymbolTable.getInstance();
+                    st.addVariable(agg.getResultVar(), agg.getResultType());
+                    st.updateVariableType(agg.getResultVar(), agg.getResultType());
+                    if (!op.equals("COUNT"))
+                        for (int i = 0; i < items.size(); i++) {
+                            st.addVariable(agg.getItemVar(i), agg.getResultType());
+                            st.updateVariableType(agg.getItemVar(i), agg.getResultType());
+                        }
+                    RESULT = agg;
               :};
