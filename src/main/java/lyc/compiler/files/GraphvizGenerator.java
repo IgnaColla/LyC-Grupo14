@@ -7,6 +7,7 @@ import lyc.compiler.utils.ASTHolder;
 import java.util.List;
 
 public class GraphvizGenerator implements FileGenerator {
+
     private int nodeCounter = 0;
     private StringBuilder dotContent;
 
@@ -29,7 +30,9 @@ public class GraphvizGenerator implements FileGenerator {
     }
 
     private String generateNode(TNode node, int parentId) {
-        if (node == null) return null;
+        if (node == null) {
+            return null;
+        }
         int currentId = nodeCounter++;
         String nodeName = "node" + currentId;
 
@@ -41,33 +44,29 @@ public class GraphvizGenerator implements FileGenerator {
                 String stmtTreeRoot = buildStatementTree(statements, 0);
                 dotContent.append(String.format(" %s -> %s;\n", nodeName, stmtTreeRoot));
             }
-        }
-        else if (node instanceof AssignmentNode) {
+        } else if (node instanceof AssignmentNode) {
             AssignmentNode an = (AssignmentNode) node;
             dotContent.append(String.format(" %s [label=\"ASSIGN\"];\n", nodeName));
             int varId = nodeCounter++;
             String varName = "node" + varId;
             dotContent.append(String.format(" %s [label=\"%s\", shape=ellipse, style=filled, fillcolor=lightgreen];\n",
-                varName, an.getVariable()));
+                    varName, an.getVariable()));
             dotContent.append(String.format(" %s -> %s;\n", nodeName, varName));
             String exprName = generateNode(an.getExpression(), currentId);
             dotContent.append(String.format(" %s -> %s;\n", nodeName, exprName));
-        }
-        else if (node instanceof ExpressionNode) {
+        } else if (node instanceof ExpressionNode) {
             ExpressionNode en = (ExpressionNode) node;
             dotContent.append(String.format(" %s [label=\"%s\"];\n", nodeName, en.getOperator()));
             String leftName = generateNode(en.getLeft(), currentId);
             String rightName = generateNode(en.getRight(), currentId);
             dotContent.append(String.format(" %s -> %s;\n", nodeName, leftName));
             dotContent.append(String.format(" %s -> %s;\n", nodeName, rightName));
-        }
-        else if (node instanceof LiteralNode) {
+        } else if (node instanceof LiteralNode) {
             LiteralNode ln = (LiteralNode) node;
             String value = ln.getValue().replace("\\", "\\\\").replace("\"", "\\\"");
             dotContent.append(String.format(" %s [label=\"%s\", shape=ellipse, style=filled, fillcolor=lightblue];\n",
-                nodeName, value));
-        }
-        else if (node instanceof IfNode) {
+                    nodeName, value));
+        } else if (node instanceof IfNode) {
             IfNode ifn = (IfNode) node;
             dotContent.append(String.format(" %s [label=\"IF\"];\n", nodeName));
             String condName = generateNode(ifn.getCondition(), currentId);
@@ -91,8 +90,7 @@ public class GraphvizGenerator implements FileGenerator {
                     dotContent.append(String.format(" %s -> %s;\n", branchName, elseTree));
                 }
             }
-        }
-        else if (node instanceof WhileNode) {
+        } else if (node instanceof WhileNode) {
             WhileNode wn = (WhileNode) node;
             dotContent.append(String.format(" %s [label=\"WHILE\"];\n", nodeName));
             String condName = generateNode(wn.getCondition(), currentId);
@@ -101,35 +99,31 @@ public class GraphvizGenerator implements FileGenerator {
                 String bodyTree = buildStatementTree(wn.getBody(), 0);
                 dotContent.append(String.format(" %s -> %s;\n", nodeName, bodyTree));
             }
-        }
-        else if (node instanceof ConditionNode) {
+        } else if (node instanceof ConditionNode) {
             ConditionNode cn = (ConditionNode) node;
             dotContent.append(String.format(" %s [label=\"%s\"];\n", nodeName, cn.getOperator()));
             String leftName = generateNode(cn.getLeft(), currentId);
             String rightName = generateNode(cn.getRight(), currentId);
             dotContent.append(String.format(" %s -> %s;\n", nodeName, leftName));
             dotContent.append(String.format(" %s -> %s;\n", nodeName, rightName));
-        }
-        else if (node instanceof ReadNode) {
+        } else if (node instanceof ReadNode) {
             ReadNode rn = (ReadNode) node;
             dotContent.append(String.format(" %s [label=\"READ\"];\n", nodeName));
             int paramId = nodeCounter++;
             String paramName = "node" + paramId;
             dotContent.append(String.format(" %s [label=\"%s\", shape=ellipse, style=filled, fillcolor=lightgreen];\n",
-                paramName, rn.getParameter()));
+                    paramName, rn.getParameter()));
             dotContent.append(String.format(" %s -> %s;\n", nodeName, paramName));
-        }
-        else if (node instanceof WriteNode) {
+        } else if (node instanceof WriteNode) {
             WriteNode wn = (WriteNode) node;
             dotContent.append(String.format(" %s [label=\"WRITE\"];\n", nodeName));
             int paramId = nodeCounter++;
             String paramName = "node" + paramId;
             String param = wn.getParameter().replace("\\", "\\\\").replace("\"", "\\\"");
             dotContent.append(String.format(" %s [label=\"%s\", shape=ellipse, style=filled, fillcolor=lightyellow];\n",
-                paramName, param));
+                    paramName, param));
             dotContent.append(String.format(" %s -> %s;\n", nodeName, paramName));
-        }
-        else if (node instanceof TriangleAreaNode) {
+        } else if (node instanceof TriangleAreaNode) {
             TriangleAreaNode tan = (TriangleAreaNode) node;
             dotContent.append(String.format(" %s [label=\"TRIANGLE_AREA\"];\n", nodeName));
 
@@ -137,15 +131,22 @@ public class GraphvizGenerator implements FileGenerator {
                 String compName = generateNode(tan.getComparisonTree(), currentId);
                 dotContent.append(String.format(" %s -> %s;\n", nodeName, compName));
             }
-        }
-        else if (node instanceof ConvDateNode) {
+        } else if (node instanceof ConvDateNode) {
             ConvDateNode cdn = (ConvDateNode) node;
             dotContent.append(String.format(" %s [label=\"CONV_DATE\"];\n", nodeName));
             if (cdn.getConversionTree() != null) {
                 String convTreeName = generateNode(cdn.getConversionTree(), currentId);
                 dotContent.append(String.format(" %s -> %s;\n", nodeName, convTreeName));
             }
-        }
+        } else if (node instanceof AggregateNode) {
+            AggregateNode an = (AggregateNode) node;
+            dotContent.append(String.format(" %s [label=\"AGG %s\"];\n", nodeName, an.getOp()));
+            for (TNode it : an.getItems()) {
+                String c = generateNode(it, currentId);
+                dotContent.append(String.format(" %s -> %s;\n", nodeName, c));
+            }
+        } else if (node instanceof WriteExprNode) {
+            /* label WRITE + generateNode(expression) */ }
 
         return nodeName;
     }
@@ -154,11 +155,11 @@ public class GraphvizGenerator implements FileGenerator {
         if (statements == null || index >= statements.size()) {
             return null;
         }
-        
+
         if (index == statements.size() - 1) {
             return generateNode(statements.get(index), -1);
         }
-        
+
         int seqId = nodeCounter++;
         String seqName = "node" + seqId;
         dotContent.append(String.format(" %s [label=\";\", shape=circle];\n", seqName));
@@ -168,7 +169,7 @@ public class GraphvizGenerator implements FileGenerator {
         if (rightChild != null) {
             dotContent.append(String.format(" %s -> %s;\n", seqName, rightChild));
         }
-        
+
         return seqName;
     }
 }

@@ -104,6 +104,12 @@ BlockComment = "/*"([^*]|"*"+[^/])*"*/"
 "String"                                 { return symbol(ParserSym.STRING_TYPE); }
 "convDate"                               { return symbol(ParserSym.CONV_DATE); }
 "triangleAreaMaximum"                    { return symbol(ParserSym.TRIANGLE_AREA_MAXIMUM); }
+"agg"                                    { return symbol(ParserSym.AGG); }
+"SUM"                                    { return symbol(ParserSym.SUM); }
+"MIN"                                    { return symbol(ParserSym.MIN); }
+"MAX"                                    { return symbol(ParserSym.MAX); }
+"AVG"                                    { return symbol(ParserSym.AVG); }
+"COUNT"                                  { return symbol(ParserSym.COUNT); }
 
 <YYINITIAL> {
   /* identifiers */

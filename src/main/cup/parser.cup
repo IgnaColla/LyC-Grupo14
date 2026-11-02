@@ -61,6 +61,12 @@ terminal WHILE;
 terminal WRITE;
 terminal COMILLA_ABRE;
 terminal COMILLA_CIERRA;
+terminal AGG;
+terminal SUM;
+terminal MIN;
+terminal MAX;
+terminal AVG;
+terminal COUNT;
 
 // Non Terminals
 non terminal start_program;
@@ -96,6 +102,9 @@ non terminal List<TriangleAreaNode.Coordinate> triangle;
 non terminal String type;
 non terminal TNode unmatched_sentence;
 non terminal List variable_list;
+non terminal AggregateNode aggregate;
+non terminal String agg_selector;
+non terminal List<TNode> agg_list;
 
 // Start Symbol Definition
 start with start_program;
@@ -402,6 +411,7 @@ factor ::= IDENTIFIER:id  {:
                         System.out.println("Negative expression: -(Expression)");
                         RESULT = new ExpressionNode("-", new LiteralNode("0"), expr);
                     :};
+         | aggregate:agg {: RESULT = agg; :}
 
 parameter ::= IDENTIFIER:id {: 
                     System.out.println("Parameter ID: " + id);
@@ -427,6 +437,7 @@ sentence_write ::= WRITE PARENTESIS_ABRE parameter:param PARENTESIS_CIERRA {:
                         System.out.println("Function write");
                         RESULT = new WriteNode(param);
                     :};
+            | WRITE PARENTESIS_ABRE aggregate:agg PARENTESIS_CIERRA {: RESULT = new WriteExprNode(agg); :}
 
 parameter_date ::= INTEGER_CONSTANT:day SUB INTEGER_CONSTANT:month SUB INTEGER_CONSTANT:year {:
                         System.out.println("Date parameter: " + day + "-" + month + "-" + year);
@@ -492,3 +503,18 @@ coordinate_value ::= INTEGER_CONSTANT:val {:
                         SymbolTable.getInstance().addVariable(id.toString(), "-");
                         RESULT = id.toString();
                     :};
+
+agg_selector ::= SUM {: RESULT = "SUM"; :} 
+                | MIN {: RESULT = "MIN"; :}
+                | MAX {: RESULT = "MAX"; :} 
+                | AVG {: RESULT = "AVG"; :}
+                | COUNT {: RESULT = "COUNT"; :};
+
+agg_list ::= agg_list:l COMA expression:e {: l.add(e); RESULT = l; :}
+           | expression:e {: List<TNode> l = new ArrayList<TNode>(); l.add(e); RESULT = l; :};
+
+aggregate ::= AGG PARENTESIS_ABRE agg_selector:op COMA CORCHETE_ABRE agg_list:items
+              CORCHETE_CIERRA PARENTESIS_CIERRA {:
+                  AggregateNode agg = new AggregateNode(op, items);
+                  RESULT = agg;
+              :};
