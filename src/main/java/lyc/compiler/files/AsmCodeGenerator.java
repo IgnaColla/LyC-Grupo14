@@ -1,12 +1,27 @@
 package lyc.compiler.files;
 
-import lyc.compiler.icg_tree.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import lyc.compiler.icg_tree.AggregateNode;
+import lyc.compiler.icg_tree.AssignmentNode;
+import lyc.compiler.icg_tree.ConditionNode;
+import lyc.compiler.icg_tree.ConvDateNode;
+import lyc.compiler.icg_tree.ExpressionNode;
+import lyc.compiler.icg_tree.IfNode;
+import lyc.compiler.icg_tree.LiteralNode;
+import lyc.compiler.icg_tree.ProgramNode;
+import lyc.compiler.icg_tree.ReadNode;
+import lyc.compiler.icg_tree.TNode;
+import lyc.compiler.icg_tree.TriangleAreaNode;
+import lyc.compiler.icg_tree.WhileNode;
+import lyc.compiler.icg_tree.WriteExprNode;
+import lyc.compiler.icg_tree.WriteNode;
+import lyc.compiler.utils.SemanticChecker;
 
 public class AsmCodeGenerator {
 
@@ -323,9 +338,6 @@ public class AsmCodeGenerator {
                     }
                 }
             }
-        } else if (expr instanceof ExpressionNode) {
-            generateExpression((ExpressionNode) expr);
-            asmCode.append(" mov dword ptr [_").append(var).append("], eax\n");
         } else if (expr instanceof ConvDateNode) {
             generateConvDateCall((ConvDateNode) expr, var);
         } else if (expr instanceof TriangleAreaNode) {
