@@ -5,7 +5,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -29,10 +28,6 @@ public class ParserTest {
 
     private void compilationSuccessful(String input) throws Exception {
         assertThat(scan(input).sym).isEqualTo(ParserSym.EOF);
-    }
-
-    private void compilationError(String input) {
-        assertThrows(Exception.class, () -> scan(input));
     }
 
     private Symbol scan(String input) throws Exception {

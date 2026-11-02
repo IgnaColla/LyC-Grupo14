@@ -6,8 +6,8 @@ init {
     areaMax : Float
     dateC : String
     var1 : Float
-    ta, tb, tc, td ttotal, tmin, tmax, tcant, tcomb, tnest, ti, tj, tl : Int
-    tmedia, tmixto, tmedia, tmedia2 : Float
+    ta, tb, tc, td, ttotal, tmin, tmax, tcant, tcomb, tnest, ti, tj, tl : Int
+    tmedia, tmixto, tmedia2 : Float
 }
 
 a = 2
@@ -74,7 +74,7 @@ if (mod1 MOD 2 == 0)
 }
 
 #+ div1 = (10 DIV 0) + (10 MOD 3) +#
-write(div1)
+#+ write(div1) +#
 
 ta = 2
 tb = 3
@@ -99,6 +99,16 @@ tl = 10
 while (agg(SUM, [ti, tj]) < tl) { ti = ti + 1 }
 write(ti)                                      #+ 9 +#
 write(agg(SUM, [ta, tb]))
+
+write(ttotal)
+write(tmin)
+write(tmax)
+write(tcant)
+write(tmixto)
+write(tmedia)
+write(tmedia2)
+write(tcomb)
+write(tnest)
 
 #+ ERRORES (descomentar de a uno)
    ttotal = agg(FOO, [ta])          selector inexistente

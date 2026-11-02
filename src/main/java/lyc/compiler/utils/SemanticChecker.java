@@ -1,9 +1,13 @@
 package lyc.compiler.utils;
 
 import java.util.HashMap;
-import java.util.Map;
-import lyc.compiler.icg_tree.*;
 import java.util.List;
+import java.util.Map;
+
+import lyc.compiler.icg_tree.AggregateNode;
+import lyc.compiler.icg_tree.ExpressionNode;
+import lyc.compiler.icg_tree.LiteralNode;
+import lyc.compiler.icg_tree.TNode;
 
 public class SemanticChecker {
 
@@ -151,5 +155,16 @@ public class SemanticChecker {
         if (containsAggregate(expr)) {
             checkTypeCompatibility(var, inferType(expr));
         }
+    }
+
+    private static boolean containsAggregate(TNode n) {
+        if (n instanceof AggregateNode) {
+            return true;
+        }
+        if (n instanceof ExpressionNode) {
+            ExpressionNode e = (ExpressionNode) n;
+            return containsAggregate(e.getLeft()) || containsAggregate(e.getRight());
+        }
+        return false;
     }
 }

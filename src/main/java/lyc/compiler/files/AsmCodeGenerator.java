@@ -82,7 +82,7 @@ public class AsmCodeGenerator {
     private void generateHeader() {
         asmCode.append(".MODEL LARGE\n");
         asmCode.append(".386\n");
-        asmCode.append(".JUMPS\n");
+        asmCode.append("JUMPS\n");
         asmCode.append(".STACK 200h\n\n");
     }
 
@@ -330,6 +330,14 @@ public class AsmCodeGenerator {
             generateConvDateCall((ConvDateNode) expr, var);
         } else if (expr instanceof TriangleAreaNode) {
             generateTriangleAreaMaximumCallFPU((TriangleAreaNode) expr, var);
+        } else if (expr instanceof ExpressionNode || expr instanceof AggregateNode) {
+            if ("Float".equals(variables.get(var))) {
+                generateFloatExpr(expr);
+                asmCode.append(" fstp dword ptr [_").append(var).append("]\n");
+            } else {
+                generateExprNode(expr);
+                asmCode.append(" mov dword ptr [_").append(var).append("], eax\n");
+            }
         }
     }
 
@@ -510,6 +518,19 @@ public class AsmCodeGenerator {
         asmCode.append(" mov dx, OFFSET _NEWLINE\n");
         asmCode.append(" mov ah, 09h\n");
         asmCode.append(" int 21h\n");
+    }
+
+    private void emitWriteExpr(WriteExprNode w) {
+        TNode e = w.getExpression();
+        if (isFloat(e)) {
+            generateFloatExpr(e);
+            asmCode.append(" call print_float\n");
+        } else {
+            generateExprNode(e);
+            asmCode.append(" lea edi, [_result_area_str]\n call int_to_string\n");
+            asmCode.append(" mov dx, OFFSET _result_area_str\n mov ah, 09h\n int 21h\n");
+        }
+        asmCode.append(" mov dx, OFFSET _NEWLINE\n mov ah, 09h\n int 21h\n");
     }
 
     private void emitRead(ReadNode read) {
