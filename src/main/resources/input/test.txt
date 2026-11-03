@@ -110,10 +110,17 @@ write(tmedia2)
 write(tcomb)
 write(tnest)
 
-#+ ERRORES (descomentar de a uno)
-   ttotal = agg(FOO, [ta])          selector inexistente
-   ttotal = agg(SUM, [])            lista vacía
-   ttotal = agg(SUM, [ta, zzz])     variable no declarada
-   ttotal = agg(SUM, [ta, "hola"])  elemento string
-   ttotal = agg(AVG, [ta, tb])      AVG asignado a Int
-+#
+#+ ERROR 1 (sintactico): selector inexistente +#
+#+ ttotal = agg(FOO, [ta]) +#
+
+#+ ERROR 2 (sintactico): lista vacía +#
+#+ ttotal = agg(SUM, []) +#
+
+#+ ERROR 3 (semantico): variable no declarada +#
+#+ ttotal = agg(SUM, [ta, zzz]) +#
+
+#+ ERROR 4 (semantico): elemento string +#
+#+ ttotal = agg(SUM, [ta, "hola"]) +#
+
+#+ ERROR 5 (semantico): AVG asignado a variable entera +#
+#+ ttotal = agg(AVG, [ta, tb]) +#

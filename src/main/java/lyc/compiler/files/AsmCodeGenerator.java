@@ -505,6 +505,12 @@ public class AsmCodeGenerator {
         asmCode.append(" int 21h\n");
     }
 
+    private void emitNewLine() {
+        asmCode.append(" mov dx, OFFSET _NEWLINE\n");
+        asmCode.append(" mov ah, 09h\n");
+        asmCode.append(" int 21h\n");
+    }
+
     private void emitWrite(WriteNode write) {
         String param = write.getParameter().replaceAll("\"", "");
         if (!isVariable(param)) {
@@ -512,6 +518,7 @@ public class AsmCodeGenerator {
             asmCode.append(" mov dx, OFFSET ").append(msgLabel).append("\n");
             asmCode.append(" mov ah, 09h\n");
             asmCode.append(" int 21h\n");
+            emitNewLine();
         } else {
             String varType = variables.get(param);
             if ("Int".equals(varType)) {
@@ -521,15 +528,12 @@ public class AsmCodeGenerator {
                 asmCode.append(" mov dx, OFFSET _result_area_str\n");
                 asmCode.append(" mov ah, 09h\n");
                 asmCode.append(" int 21h\n");
+                emitNewLine();
             } else {
                 asmCode.append(" fld dword ptr [_").append(param).append("]\n");
                 asmCode.append(" call print_float\n");
             }
         }
-
-        asmCode.append(" mov dx, OFFSET _NEWLINE\n");
-        asmCode.append(" mov ah, 09h\n");
-        asmCode.append(" int 21h\n");
     }
 
     private void emitWriteExpr(WriteExprNode w) {
@@ -541,8 +545,8 @@ public class AsmCodeGenerator {
             generateExprNode(e);
             asmCode.append(" lea edi, [_result_area_str]\n call int_to_string\n");
             asmCode.append(" mov dx, OFFSET _result_area_str\n mov ah, 09h\n int 21h\n");
+            emitNewLine();
         }
-        asmCode.append(" mov dx, OFFSET _NEWLINE\n mov ah, 09h\n int 21h\n");
     }
 
     private void emitRead(ReadNode read) {
