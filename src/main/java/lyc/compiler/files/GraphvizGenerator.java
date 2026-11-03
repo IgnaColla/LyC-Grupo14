@@ -117,9 +117,11 @@ public class GraphvizGenerator implements FileGenerator {
             ConditionNode cn = (ConditionNode) node;
             dotContent.append(String.format(" %s [label=\"%s\"];\n", nodeName, cn.getOperator()));
             String leftName = generateNode(cn.getLeft(), currentId);
-            String rightName = generateNode(cn.getRight(), currentId);
             dotContent.append(String.format(" %s -> %s;\n", nodeName, leftName));
-            dotContent.append(String.format(" %s -> %s;\n", nodeName, rightName));
+            if (cn.getRight() != null) {
+                String rightName = generateNode(cn.getRight(), currentId);
+                dotContent.append(String.format(" %s -> %s;\n", nodeName, rightName));
+            }
         } else if (node instanceof ReadNode) {
             ReadNode rn = (ReadNode) node;
             dotContent.append(String.format(" %s [label=\"READ\"];\n", nodeName));
@@ -183,6 +185,7 @@ public class GraphvizGenerator implements FileGenerator {
         String leftChild = generateNode(statements.get(index), seqId);
         dotContent.append(String.format(" %s -> %s;\n", seqName, leftChild));
         String rightChild = buildStatementTree(statements, index + 1);
+
         if (rightChild != null) {
             dotContent.append(String.format(" %s -> %s;\n", seqName, rightChild));
         }
